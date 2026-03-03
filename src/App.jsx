@@ -11,6 +11,10 @@ import Payments from "./pages/Payments";
 import Advising from "./pages/Advising";
 import Events from "./pages/Events";
 import Clubs from "./pages/Clubs";
+import Activities from "./pages/Activities";
+import Grades from "./pages/Grades";
+import Notifications from "./pages/Notifications";
+import Search from "./pages/Search";
 import SkillArena from "./pages/SkillArena";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -40,6 +44,10 @@ const App = () => (
           <Route path="/app/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
           <Route path="/app/advising" element={<ProtectedRoute><Advising /></ProtectedRoute>} />
           <Route path="/app/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+          <Route path="/app/activities" element={<ProtectedRoute><Activities /></ProtectedRoute>} />
+          <Route path="/app/grades" element={<ProtectedRoute><Grades /></ProtectedRoute>} />
+          <Route path="/app/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/app/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
           <Route path="/app/clubs" element={<ProtectedRoute><Clubs /></ProtectedRoute>} />
           <Route path="/app/skill-arena" element={<ProtectedRoute><SkillArena /></ProtectedRoute>} />
           <Route path="/app/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

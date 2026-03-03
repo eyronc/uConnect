@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { GraduationCap, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, Eye, EyeOff, CheckCircle, ArrowRight } from 'lucide-react';
 
 export default function Register() {
   const { signUp } = useAuth();
@@ -17,10 +17,7 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSuccess(false);
-
     const { error } = await signUp(email, password);
-
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -30,23 +27,28 @@ export default function Register() {
     }
   };
 
+  // Shared Background Component to keep it DRY
+  const BackgroundOrbs = () => (
+    <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-400/20 blur-[120px] animate-pulse" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-400/20 blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+    </div>
+  );
+
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F8F7F4] p-8">
-        <div className="w-full max-w-md rounded-2xl border border-[#E8E4DE] bg-white p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <Mail className="h-8 w-8 text-green-600" />
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 relative">
+        <BackgroundOrbs />
+        <div className="w-full max-w-md bg-white/80 backdrop-blur-2xl rounded-3xl p-10 border border-slate-200 shadow-2xl text-center space-y-6">
+          <div className="w-20 h-20 mx-auto bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+            <CheckCircle className="w-10 h-10 text-white" />
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-[#1C1917]">Check your email</h2>
-          <p className="mb-6 text-sm text-[#78716C]">
-            We've sent a verification link to <strong>{email}</strong>. Click the link to verify
-            your account and get started.
-          </p>
-          <Link
-            to="/login"
-            className="inline-block rounded-lg bg-[#2563EB] px-6 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
-            Return to Sign in
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold text-slate-900">Check your email</h2>
+            <p className="text-slate-600">We've sent a verification link to <br/><span className="font-semibold text-slate-900">{email}</span></p>
+          </div>
+          <Link to="/login" className="flex items-center justify-center w-full h-14 bg-slate-900 text-white rounded-2xl font-semibold hover:bg-slate-800 transition-all">
+            Return to Sign In
           </Link>
         </div>
       </div>
@@ -54,117 +56,139 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <div className="hidden w-1/2 bg-[#0F172A] p-16 text-white lg:flex lg:flex-col lg:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#2563EB]">
-            <GraduationCap className="h-7 w-7 text-white" />
+    <div className="min-h-screen flex bg-slate-50 relative overflow-hidden font-inter">
+      <BackgroundOrbs />
+
+      {/* Left Panel: Promo (Visible on LG) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 p-16 flex-col justify-between relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="h-12 w-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <GraduationCap className="h-7 w-7 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-white tracking-tight">uConnect</span>
           </div>
-          <span className="text-2xl font-semibold">uConnect</span>
-        </div>
 
-        <div>
-          <h1 className="font-serif text-5xl font-bold leading-tight">
-            Join thousands of students{' '}
-            <span className="text-[#60A5FA]">already connected.</span>
+          <h1 className="text-5xl font-bold text-white leading-tight mb-6">
+            Everything your campus <br />
+            <span className="text-blue-400">needs in one place.</span>
           </h1>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-300">
-            Get instant access to your academic dashboard, course materials, campus events, and more.
-          </p>
+          <p className="text-slate-400 text-xl max-w-md">Join 48k+ students organizing their academic life with precision.</p>
         </div>
-      </div>
 
-      <div className="flex w-full items-center justify-center bg-white p-8 lg:w-1/2">
-        <div className="w-full max-w-md">
-          <div className="mb-8 lg:hidden">
-            <div className="flex items-center justify-center gap-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#2563EB]">
-                <GraduationCap className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-xl font-semibold text-[#1C1917]">uConnect</span>
+        <div className="grid gap-4 relative z-10">
+          <div className="p-6 bg-white/5 backdrop-blur-md rounded-2xl mt-5 border border-white/10 flex items-center gap-4">
+            <div className="h-10 w-10 bg-cyan-500/20 rounded-lg flex items-center justify-center text-cyan-400 font-bold">01</div>
+            <div>
+              <p className="font-bold text-white">Unified Dashboard</p>
+              <p className="text-sm text-slate-400">Courses, schedules, and grades.</p>
             </div>
           </div>
+          <div className="p-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 flex items-center gap-4">
+            <div className="h-10 w-10 bg-emerald-500/20 rounded-lg flex items-center justify-center text-emerald-400 font-bold">02</div>
+            <div>
+              <p className="font-bold text-white">Skill Arena</p>
+              <p className="text-sm text-slate-400">Compete in live coding battles.</p>
+            </div>
+          </div>
+        </div>
 
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-[#1C1917]">Create your account</h2>
-            <p className="mt-2 text-sm text-[#78716C]">Start your academic journey with uConnect</p>
+        {/* Abstract shape for the dark side */}
+        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-blue-600/10 to-transparent pointer-events-none" />
+      </div>
+
+      {/* Right Panel: Form */}
+      <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+        <div className="w-full max-w-md space-y-8">
+          {/* Mobile Header */}
+          <div className="lg:hidden flex flex-col items-center mb-8">
+            <div className="h-14 w-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl mb-4">
+              <GraduationCap className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900">uConnect</h2>
+          </div>
+
+          <div className="space-y-2 text-center lg:text-left">
+            <h2 className="text-4xl font-bold text-slate-900 tracking-tight">Create Account</h2>
+            <p className="text-slate-500 text-lg">Start your journey with us today.</p>
           </div>
 
           {error && (
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-sm flex items-center gap-3">
+              <div className="h-2 w-2 rounded-full bg-red-500" />
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[#1C1917]">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#78716C]" />
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700 ml-1">Full Name</label>
+              <div className="relative group">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="John Doe"
-                  className="h-12 w-full rounded-lg border border-[#E8E4DE] bg-white pl-10 pr-4 text-[#1C1917] placeholder-[#A8A29E] transition-colors focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full h-14 pl-12 pr-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-all shadow-sm"
                   required
                 />
               </div>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[#1C1917]">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#78716C]" />
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-slate-700 ml-1">Email Address</label>
+              <div className="relative group">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@university.edu"
-                  className="h-12 w-full rounded-lg border border-[#E8E4DE] bg-white pl-10 pr-4 text-[#1C1917] placeholder-[#A8A29E] transition-colors focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  placeholder="name@university.edu"
+                  className="w-full h-14 pl-12 pr-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-all shadow-sm"
                   required
                 />
               </div>
             </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[#1C1917]">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#78716C]" />
+            <div className="space-y-1.5">
+              <div className="flex justify-between">
+                <label className="text-sm font-semibold text-slate-700 ml-1">Password</label>
+                <span className="text-xs text-slate-400">Min. 6 chars</span>
+              </div>
+              <div className="relative group">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 group-focus-within:text-blue-600 transition-colors" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="h-12 w-full rounded-lg border border-[#E8E4DE] bg-white pl-10 pr-12 text-[#1C1917] placeholder-[#A8A29E] transition-colors focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20"
+                  className="w-full h-14 pl-12 pr-12 bg-white border-2 border-slate-200 rounded-2xl focus:border-blue-600 focus:outline-none transition-all shadow-sm"
                   required
-                  minLength={6}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#78716C] transition-colors hover:text-[#1C1917]"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              <p className="mt-2 text-xs text-[#78716C]">
-                Must be at least 6 characters long
-              </p>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="h-12 w-full rounded-lg bg-[#2563EB] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2 group disabled:opacity-70"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Processing...' : 'Create Account'}
+              {!loading && <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-[#78716C]">
+          <p className="text-center text-slate-500">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-[#2563EB] hover:underline">
+            <Link to="/login" className="text-blue-600 font-bold hover:underline">
               Sign in
             </Link>
           </p>
