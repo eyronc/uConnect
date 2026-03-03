@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
-  const { user, profile } = useAuth();
+  const { user, profile} = useAuth();
   const [stats, setStats] = useState({
     enrolledCourses: 0,
     upcomingDeadlines: 4, 
@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
+  
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
     
@@ -107,9 +107,12 @@ export default function Dashboard() {
         
         {/* Header Section */}
         <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-10 border border-white/5 shadow-2xl">
-           <div className="relative z-10">
+          <div className="relative z-10">
             <h2 className="text-4xl font-black text-white tracking-tight">
-              Welcome back, <span className="text-blue-400">{profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Student'}</span>
+              Welcome back, <span className="text-blue-400">
+                {/* Prioritize the updated profile name, then fallback to email, then 'Student' */}
+                {profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Student'}
+              </span>
             </h2>
             <p className="text-slate-400 mt-2 text-lg font-medium">Your academic overview for today.</p>
           </div>
