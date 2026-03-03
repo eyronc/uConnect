@@ -1,36 +1,43 @@
 # uConnect
 
-## Project info
+**uConnect** is a streamlined Academic Success & Student Management System. It serves as a central hub for students to manage their academic journey, connect with faculty mentors, and stay on top of their educational requirements.
 
-**URL**: //
+## Key Features
 
-## How can I edit this code?
+* **Success Center:** A centralized dashboard for academic status and tracking.
+* **Smart Advising:** Seamlessly book and manage sessions with department-specific advisors.
+* **Real-time Messaging:** Direct communication channel between students and faculty.
+* **Profile Management:** Secure student record management with Supabase integration.
+* **Modern UI:** A fast, responsive interface built with React, Tailwind CSS, and Framer Motion.
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+* **Frontend:** React (Vite)
+* **Styling:** Tailwind CSS + Lucide Icons
+* **Backend/Database:** Supabase (PostgreSQL)
+* **Authentication:** Supabase Auth
+* **Deployment:** Lovable / Vercel
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm/nvm#installing-and-updating)
-
-Follow these steps:
-
+1. **Clone & Install**
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
 git clone <YOUR_GIT_URL>
+cd uConnect
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. **Environment Setup**
+Create a `.env` file in the root and add your Supabase credentials:
+```env
+VITE_SUPABASE_URL=your_project_url
+VITE_SUPABASE_ANON_KEY=your_anon_key
+
+```
+
+
+3. **Run Development**
+```sh
 npm run dev

@@ -27,21 +27,18 @@ export default function Dashboard() {
     
     try {
       const today = new Date().toISOString();
-      const [enrollmentsRes, paymentsRes, eventsRes] = await Promise.all([
-        supabase.from('enrollments').select('*, courses(course_name)').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('payments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        supabase.from('events')
-          .select('*')
-          .gte('start_date', today)
-          .order('start_date', { ascending: true })
-          .limit(4),
+      const [enrollmentsRes, paymentsRes, profileRes] = await Promise.all([
+        supabase.from('enrollments').select('status').eq('user_id', user.id),
+        supabase.from('payments').select('status').eq('user_id', user.id),
+        supabase.from('profiles').select('gpa').eq('id', user.id).single(),
       ]);
 
-      setStats(prev => ({
-        ...prev,
+      setStats({
         enrolledCourses: enrollmentsRes.data?.filter(e => e.status === 'active').length || 0,
+        upcomingDeadlines: 0,
         pendingPayments: paymentsRes.data?.filter(p => p.status === 'pending').length || 0,
-      }));
+        currentGpa: profileRes.data?.gpa || 0,
+      });
 
       setUpcomingEvents(eventsRes.data || []);
 
@@ -112,7 +109,7 @@ export default function Dashboard() {
         <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-900 p-10 border border-white/5 shadow-2xl">
            <div className="relative z-10">
             <h2 className="text-4xl font-black text-white tracking-tight">
-              Welcome back, <span className="text-blue-400">{profile?.full_name?.split(' ')[0] || 'Student'}</span>
+              Welcome back, <span className="text-blue-400">{profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Student'}</span>
             </h2>
             <p className="text-slate-400 mt-2 text-lg font-medium">Your academic overview for today.</p>
           </div>

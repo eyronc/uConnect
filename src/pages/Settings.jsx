@@ -40,21 +40,29 @@ export default function Settings() {
     setMessage('');
 
     try {
+      // Use upsert instead of update to handle new profiles
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: user.id, // Primary key for upsert
           ...formData,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
+        }, { onConflict: 'user_id' });
 
       if (error) throw error;
 
-      await refreshProfile();
-      setMessage('Profile updated successfully!');
+      if (refreshProfile) {
+        await refreshProfile();
+      }
+      
+      setMessage('Profile updated successfully! ✨');
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(''), 3000);
+      
     } catch (error) {
       console.error('Error updating profile:', error);
-      setMessage('Failed to update profile');
+      setMessage('Failed to update profile: ' + error.message);
     } finally {
       setLoading(false);
     }
