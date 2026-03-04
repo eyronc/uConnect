@@ -397,7 +397,6 @@ export default function Landing() {
         </div>
       </section>
 
-<<<<<<< HEAD
       {/* ── CTA ── */}
       <section style={{ padding:'7rem 1.75rem', background:'#F7F3EE', textAlign:'center' }}>
         <div style={{ maxWidth:560, margin:'0 auto' }}>
@@ -426,89 +425,3 @@ export default function Landing() {
     </div>
   );
 }
-=======
-      {/* Stats Section */}
-      <section className="px-6 sm:px-8 py-24 relative overflow-hidden bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700">
-        <div className="absolute inset-0 opacity-10 animate-pattern" style={{
-          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
-        }} />
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-16 text-center text-white">
-            {[
-              { stat: '10K+', label: 'Students Active' },
-              { stat: '50K+', label: 'Problems Solved' },
-              { stat: '98%', label: 'User Satisfaction' },
-            ].map((item, idx) => (
-              <div key={idx} className="animate-fade-in" style={{ animationDelay: `${idx * 100}ms` }}>
-                <div className="text-5xl lg:text-6xl font-black mb-4 animate-scale-in" style={{ animationDelay: `${idx * 100}ms` }}>
-                  {item.stat}
-                </div>
-                <div className="text-xl font-medium">{item.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="px-6 sm:px-8 py-28 relative overflow-hidden bg-white/50 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto text-center relative z-10 animate-fade-in">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-slate-900 mb-8" style={{ lineHeight: '1.15' }}>
-            Ready to organize your 
-            <br />
-            <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">campus life?</span>
-          </h2>
-          <p className="text-xl text-slate-600 mb-12 max-w-2xl mx-auto">
-            Join thousands of students mastering their academic journey
-          </p>
-          <Link
-            to="/register"
-            className="group px-12 py-6 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-xl rounded-3xl shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-500 inline-flex items-center gap-3 backdrop-blur-sm"
-          >
-            <span className="group-hover:translate-x-1 transition-transform duration-300">Start Free Today</span>
-            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" />
-          </Link>
-          <p className="text-sm mt-8 text-slate-500 font-medium">
-            No credit card required • Free forever for students
-          </p>
-        </div>
-      </section>
-      
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-        @keyframes float-delayed {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-30px); }
-        }
-        .animate-float { animation: float 6s ease-in-out infinite; }
-        .animate-float-delayed { animation: float-delayed 7s ease-in-out infinite; }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: fade-in 0.8s ease-out forwards; }
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(50px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-up { animation: slide-up 0.8s ease-out forwards; }
-        @keyframes scale-in {
-          from { transform: scale(0.5); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .animate-scale-in { animation: scale-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        @keyframes pattern {
-          0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(10px, 10px); }
-          75% { transform: translate(-10px, -10px); }
-        }
-        .animate-pattern { animation: pattern 20s linear infinite; }
-      `}</style>
-    </div>
-  );
-}
->>>>>>> b714cb5f5cde64c99ecefc487ab784650b4ad57c

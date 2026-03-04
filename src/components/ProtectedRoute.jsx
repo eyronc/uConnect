@@ -2,46 +2,68 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GraduationCap } from 'lucide-react';
 
-const font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div
-        className="flex min-h-screen flex-col items-center justify-center gap-3 p-6"
-        style={{ backgroundColor: '#080C18', fontFamily: font }}
-      >
-        {/* Brand mark - smaller */}
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-xl"
-          style={{
-            backgroundColor: '#1A2035',
-            border: '1px solid #1C2333',
-          }}
-        >
-          <GraduationCap style={{ width: 16, height: 16, color: '#3B82F6' }} />
-        </div>
+      <div style={{
+        minHeight: '100vh',
+        background: '#F7F3EE',
+        fontFamily: "'DM Sans', sans-serif",
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: '1.5rem',
+      }}>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
 
-        {/* Spinner */}
-        <div className="relative" style={{ width: 18, height: 18 }}>
-          <div
-            className="absolute inset-0 rounded-full"
-            style={{ border: '1.5px solid #1C2333' }}
-          />
-          <div
-            className="absolute inset-0 rounded-full animate-spin"
-            style={{
-              border: '1.5px solid transparent',
-              borderTopColor: '#3B82F6',
-            }}
-          />
-        </div>
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .load-wrap { animation: fadeIn 0.4s ease both; }
+        `}</style>
 
-        <p className="text-xs font-medium tracking-tight" style={{ color: '#3D4A5C' }}>
-          Loading...
-        </p>
+        <div className="load-wrap" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+          {/* Logo mark */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{
+              width: 30, height: 30,
+              background: '#1a1510',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <GraduationCap size={16} color="#F7F3EE" />
+            </div>
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '1.0625rem', fontWeight: 600,
+              color: '#1a1510', letterSpacing: '-0.01em',
+            }}>uConnect</span>
+          </div>
+
+          {/* Spinner — thin square border, one side colored */}
+          <div style={{
+            width: 20, height: 20,
+            border: '2px solid #e0dbd3',
+            borderTopColor: '#1a1510',
+            borderRadius: 0,
+            animation: 'spin 0.75s linear infinite',
+          }} />
+
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: '0.75rem', fontWeight: 500,
+            color: '#b0aba5',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}>Loading</p>
+        </div>
       </div>
     );
   }

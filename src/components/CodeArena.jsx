@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Play, AlertCircle, Trophy, Zap, Crown, ChevronRight } from 'lucide-react';
 
 export default function CodeArena({ onClose, problem }) {
-  const [player1Code, setPlayer1Code] = useState('// Player 1: Solve sumTwoNumbers\nfunction sumTwoNumbers(a, b) {\n  // Write your solution here\n  return 0;\n}');
+  const [player1Code, setPlayer1Code] = useState('// Player 1: Solve the problem below\nfunction solution() {\n  // Write your solution here\n  return 0;\n}');
   const [player2Code, setPlayer2Code] = useState('');
   const [player1Tests, setPlayer1Tests] = useState(0);
   const [player2Tests, setPlayer2Tests] = useState(0);
@@ -13,7 +13,6 @@ export default function CodeArena({ onClose, problem }) {
   const [disqualified, setDisqualified] = useState(null);
   const timerRef = useRef();
 
-  // Reset on new problem
   useEffect(() => {
     if (problem) {
       setPlayer1Code(problem.starterCode || '');
@@ -23,19 +22,15 @@ export default function CodeArena({ onClose, problem }) {
         bot = bot.replace(/return\s+[^;]+;/, `return ${JSON.stringify(firstExp)};`);
       }
       setPlayer2Code(bot);
-      setTimer(15); 
-      setPlayer1Tests(0);
-      setPlayer2Tests(0);
-      setWinner(null);
-      setShowWarning(false);
-      setTabSwitches({ p1: 0 });
-      setDisqualified(null);
+      setTimer(15);
+      setPlayer1Tests(0); setPlayer2Tests(0);
+      setWinner(null); setShowWarning(false);
+      setTabSwitches({ p1: 0 }); setDisqualified(null);
     }
   }, [problem]);
 
   const testCases = problem?.testCases || [];
 
-  // Anti-cheat tab switch detection
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -47,12 +42,10 @@ export default function CodeArena({ onClose, problem }) {
         });
       }
     };
-    
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
-  // Timer effect
   useEffect(() => {
     if (timer > 0 && !winner && !disqualified) {
       timerRef.current = setTimeout(() => setTimer(t => t - 1), 1000);
@@ -62,19 +55,12 @@ export default function CodeArena({ onClose, problem }) {
 
   const runTests = useCallback((code, isPlayer1) => {
     let passedTests = 0;
-
     if (problem?.solution) {
       const normalize = s => (s || '').replace(/\s+/g, '').replace(/;$/, '');
       try {
-        if (normalize(code).includes(normalize(problem.solution)) || 
-            normalize(problem.solution).includes(normalize(code))) {
-          if (isPlayer1) {
-            setPlayer1Tests(testCases.length);
-            setWinner('Player 1');
-          } else {
-            setPlayer2Tests(testCases.length);
-            setWinner('Player 2');
-          }
+        if (normalize(code).includes(normalize(problem.solution)) || normalize(problem.solution).includes(normalize(code))) {
+          if (isPlayer1) { setPlayer1Tests(testCases.length); setWinner('Player 1'); }
+          else { setPlayer2Tests(testCases.length); setWinner('Player 2'); }
           return;
         }
       } catch (e) {}
@@ -83,10 +69,7 @@ export default function CodeArena({ onClose, problem }) {
     let fnName = null, fnParams = '';
     if (problem?.starterCode) {
       const sigMatch = problem.starterCode.match(/function\s+(\w+)\s*\(([^)]*)\)/);
-      if (sigMatch) {
-        fnName = sigMatch[1];
-        fnParams = sigMatch[2];
-      }
+      if (sigMatch) { fnName = sigMatch[1]; fnParams = sigMatch[2]; }
     }
 
     let userFn = null;
@@ -94,7 +77,6 @@ export default function CodeArena({ onClose, problem }) {
       let userBody = code;
       const bodyMatch = code.match(/function\s+\w+\s*\([^)]*\)\s*\{([\s\S]*)\}$/);
       if (bodyMatch) userBody = bodyMatch[1];
-
       try {
         const params = fnParams.split(',').map(p => p.trim()).filter(Boolean);
         userFn = new Function(...params, userBody);
@@ -105,31 +87,18 @@ export default function CodeArena({ onClose, problem }) {
       try {
         const callMatch = tc.input.match(/(\w+)\s*\((.*)\)/);
         if (!callMatch) return;
-        
         const argsRaw = callMatch[2].trim();
         let args = [];
-        if (argsRaw) {
-          args = (new Function(`return [${argsRaw}]`))();
-        }
-
+        if (argsRaw) args = (new Function(`return [${argsRaw}]`))();
         let result;
-        if (userFn && callMatch[1] === fnName) {
-          result = userFn(...args);
-        } else {
-          result = eval(tc.input);
-        }
-
+        if (userFn && callMatch[1] === fnName) result = userFn(...args);
+        else result = eval(tc.input);
         if (result === tc.expected) passedTests++;
       } catch (e) {}
     });
 
-    if (isPlayer1) {
-      setPlayer1Tests(passedTests);
-      if (passedTests === testCases.length) setWinner('Player 1');
-    } else {
-      setPlayer2Tests(passedTests);
-      if (passedTests === testCases.length) setWinner('Player 2');
-    }
+    if (isPlayer1) { setPlayer1Tests(passedTests); if (passedTests === testCases.length) setWinner('Player 1'); }
+    else { setPlayer2Tests(passedTests); if (passedTests === testCases.length) setWinner('Player 2'); }
   }, [problem, testCases]);
 
   const handleKeyDown = useCallback((e) => {
@@ -137,255 +106,237 @@ export default function CodeArena({ onClose, problem }) {
       e.preventDefault();
       const start = e.target.selectionStart;
       const end = e.target.selectionEnd;
-      setPlayer1Code(prev => 
-        prev.substring(0, start) + '  ' + prev.substring(end)
-      );
+      setPlayer1Code(prev => prev.substring(0, start) + '  ' + prev.substring(end));
       e.target.selectionStart = e.target.selectionEnd = start + 2;
     }
   }, []);
 
-  const TestIndicator = ({ passed, total }) => (
-    <div className="flex gap-1 p-2 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+  const TestDots = ({ passed, total }) => (
+    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       {Array.from({ length: total }).map((_, i) => (
-        <div
-          key={i}
-          className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
-            i < passed 
-              ? 'bg-gradient-to-r from-emerald-400 to-cyan-500 shadow-md shadow-emerald-500/25 scale-110' 
-              : 'bg-gradient-to-r from-slate-400 to-slate-500 shadow-md shadow-slate-500/25'
-          }`}
-        />
+        <div key={i} style={{
+          width: 8, height: 8,
+          background: i < passed ? '#1a7a4a' : '#ddd8d0',
+          transition: 'background 0.3s',
+        }} />
       ))}
     </div>
   );
 
-  if (disqualified) {
-    return (
-      <div className="fixed inset-0 bg-gradient-to-br from-red-500/20 via-black/80 to-blue-950/90 flex items-center justify-center z-50 backdrop-blur-sm">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/50 rounded-2xl p-8 text-center max-w-sm mx-4 animate-in slide-in-from-top-4 fade-in duration-500">
-          <div className="mb-6 flex justify-center">
-            <div className="h-16 w-16 bg-gradient-to-br from-red-500/20 to-rose-500/20 rounded-2xl flex items-center justify-center border border-red-500/30 backdrop-blur-sm shadow-xl shadow-red-500/25">
-              <AlertCircle className="h-8 w-8 text-red-400 drop-shadow-lg" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-black bg-gradient-to-r from-red-400 to-rose-500 bg-clip-text text-transparent mb-4 tracking-tight">
-            DISQUALIFIED
-          </h2>
-          <p className="text-base text-slate-300/90 mb-8 font-medium leading-relaxed max-w-sm mx-auto">
-            Player 1 disqualified for cheating (tab switch detected).
-          </p>
-          <button
-            onClick={onClose}
-            className="group w-full px-6 py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-semibold text-base shadow-xl shadow-red-500/50 hover:shadow-red-500/75 hover:scale-[1.02] transition-all duration-300 hover:from-red-600 hover:to-rose-600"
-          >
-            Exit Arena
-          </button>
+  /* ── Disqualified screen ── */
+  if (disqualified) return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(26,21,16,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans',sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700&family=DM+Sans:opsz,wght@9..40,400;9..40,600&display=swap');`}</style>
+      <div style={{ background: '#F7F3EE', border: '1px solid #ddd8d0', padding: '2.5rem', maxWidth: 360, width: '100%', textAlign: 'center' }}>
+        <div style={{ width: 48, height: 48, background: '#fff4f4', border: '1px solid #f8c8c8', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+          <AlertCircle size={22} color="#c83030" />
         </div>
+        <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.5rem', fontWeight: 700, color: '#1a1510', marginBottom: '0.75rem' }}>Disqualified</h2>
+        <p style={{ fontSize: '0.875rem', color: '#8a857f', lineHeight: 1.6, marginBottom: '1.75rem' }}>
+          Player 1 was disqualified for tab switching (anti-cheat detected).
+        </p>
+        <button onClick={onClose} style={{
+          width: '100%', height: 44, background: '#c83030', border: 'none', color: '#fff',
+          fontFamily: "'DM Sans',sans-serif", fontWeight: 600, fontSize: '0.8rem',
+          letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer',
+        }}>Exit Arena</button>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (winner) {
-    return (
-      <div className="fixed inset-0 bg-gradient-to-br from-emerald-500/30 via-black/80 to-cyan-500/20 flex items-center justify-center z-50 backdrop-blur-md animate-pulse">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/50 rounded-2xl p-8 text-center max-w-md mx-4 animate-in zoom-in-95 fade-in duration-700">
-          <div className="mb-6 flex justify-center">
-            <div className="h-20 w-20 bg-gradient-to-br from-emerald-500/30 to-cyan-500/30 rounded-2xl flex items-center justify-center border-4 border-emerald-400/50 backdrop-blur-lg shadow-xl shadow-emerald-500/40 animate-bounce">
-              <Crown className="h-10 w-10 text-emerald-400 drop-shadow-xl" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-black bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-500 bg-clip-text text-transparent mb-4 tracking-tight">
-            VICTORY!
-          </h2>
-          <p className="text-xl font-bold text-emerald-400 mb-4 drop-shadow-lg animate-pulse">{winner} Wins!</p>
-          <p className="text-lg text-slate-300/90 mb-6 font-medium">Completed all {testCases.length} tests 🎉</p>
-          {problem?.solution && (
-            <div className="mb-6 p-4 bg-black/20 rounded-xl text-left font-mono text-sm text-emerald-300 border border-emerald-500/30 backdrop-blur-xl">
-              <strong className="text-lg block mb-2">Solution:</strong>
-              <pre className="whitespace-pre-wrap text-emerald-200 text-xs">{problem.solution}</pre>
-            </div>
-          )}
-          <button
-            onClick={onClose}
-            className="group w-full px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl font-semibold text-base shadow-xl shadow-emerald-500/50 hover:shadow-emerald-500/75 hover:scale-[1.02] transition-all duration-300 hover:from-emerald-600 hover:to-cyan-600"
-          >
-            <span className="flex items-center justify-center gap-2">
-              <Trophy className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
-              Exit Arena
-            </span>
-          </button>
+  /* ── Winner screen ── */
+  if (winner) return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(26,21,16,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans',sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700&family=DM+Sans:opsz,wght@9..40,400;9..40,600&display=swap');`}</style>
+      <div style={{ background: '#F7F3EE', border: '1px solid #ddd8d0', padding: '2.5rem', maxWidth: 420, width: '100%', textAlign: 'center' }}>
+        <div style={{ width: 52, height: 52, background: '#1a1510', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+          <Crown size={24} color="#F7F3EE" />
         </div>
+        <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: '1.75rem', fontWeight: 700, color: '#1a1510', marginBottom: '0.5rem' }}>Victory</h2>
+        <p style={{ fontSize: '1rem', fontWeight: 600, color: '#1955e6', marginBottom: '0.375rem' }}>{winner} wins!</p>
+        <p style={{ fontSize: '0.875rem', color: '#8a857f', marginBottom: '1.5rem' }}>
+          Completed all {testCases.length} test{testCases.length !== 1 ? 's' : ''} 🎉
+        </p>
+        {problem?.solution && (
+          <div style={{ background: '#fff', border: '1px solid #e8e2db', padding: '1rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+            <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 600, color: '#8a857f', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.625rem' }}>Solution</p>
+            <pre style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#1a1510', whiteSpace: 'pre-wrap', margin: 0 }}>{problem.solution}</pre>
+          </div>
+        )}
+        <button onClick={onClose} style={{
+          width: '100%', height: 44, background: '#1a1510', border: 'none', color: '#F7F3EE',
+          fontFamily: "'DM Sans',sans-serif", fontWeight: 600, fontSize: '0.8rem',
+          letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+        }}>
+          <Trophy size={14} /> Exit Arena
+        </button>
       </div>
-    );
-  }
+    </div>
+  );
 
+  /* ── Main arena ── */
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-blue-950/40 to-slate-900 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-      <div className="bg-white/3 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/50 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col hover:shadow-blue-500/30 transition-all duration-500">
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      background: 'rgba(26,21,16,0.6)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '1rem', fontFamily: "'DM Sans',sans-serif",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700&family=DM+Sans:opsz,wght@9..40,400;9..40,600&display=swap');
+        * { box-sizing: border-box; }
+        .f-display { font-family: 'Playfair Display', Georgia, serif; }
+        .code-area { font-family: 'Courier New', monospace; font-size: 0.8125rem; line-height: 1.6; resize: none; outline: none; border: none; }
+        .code-area::-webkit-scrollbar { width: 4px; }
+        .code-area::-webkit-scrollbar-thumb { background: #ddd8d0; }
+      `}</style>
+
+      <div style={{
+        background: '#F7F3EE', border: '1px solid #ddd8d0',
+        width: '100%', maxWidth: 960, maxHeight: '92vh',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        boxShadow: '0 24px 64px rgba(26,21,16,0.2)',
+      }}>
+
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-900 via-blue-950 to-slate-950 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center justify-between">
+        <div style={{
+          padding: '0 1.25rem', height: 52, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          borderBottom: '1px solid #ddd8d0', background: '#1a1510',
+        }}>
           <div>
-            <h2 className="text-2xl font-black bg-gradient-to-r from-cyan-300 to-white bg-clip-text text-transparent tracking-tight">
-              ⚔️ Code Arena
-            </h2>
-            <p className="text-sm text-slate-300/90 mt-1 font-medium tracking-wide">
-              1v1 Battle • {problem?.title || 'Challenge'}
-            </p>
+            <span className="f-display" style={{ fontSize: '1rem', fontWeight: 700, color: '#F7F3EE', letterSpacing: '-0.01em' }}>
+              ⚔ Code Arena
+            </span>
+            <span style={{ fontSize: '0.75rem', color: '#5a5550', marginLeft: '0.75rem' }}>
+              1v1 · {problem?.title || 'Challenge'}
+            </span>
           </div>
-          <button
-            onClick={onClose}
-            className="group p-2 hover:bg-white/10 hover:backdrop-blur-sm rounded-xl transition-all duration-300 hover:scale-110 backdrop-blur-md border border-white/20 shadow-lg shadow-black/30 hover:shadow-cyan-500/30"
-          >
-            <X className="h-5 w-5 text-slate-300 group-hover:text-white transition-colors" />
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b6560', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#F7F3EE'}
+            onMouseLeave={e => e.currentTarget.style.color = '#6b6560'}>
+            <X size={16} />
           </button>
         </div>
 
-        {/* Warning Banner */}
+        {/* Warning */}
         {showWarning && (
-          <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-b border-amber-400/40 px-6 py-3 flex items-center gap-3 text-amber-100 backdrop-blur-md animate-in slide-in-from-top-2">
-            <div className="p-1.5 bg-amber-500/20 rounded-xl border border-amber-400/50 backdrop-blur-sm shadow-lg shadow-amber-500/25">
-              <AlertCircle className="h-5 w-5 flex-shrink-0" />
-            </div>
-            <div className="flex-1">
-              <p className="font-bold text-base tracking-wide">⚠️ Tab Switch Detected</p>
-              <p className="text-xs opacity-90 font-medium">One more = disqualification!</p>
+          <div style={{
+            padding: '0.625rem 1.25rem', background: '#fffbeb',
+            borderBottom: '1px solid #f5d87a',
+            display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0,
+          }}>
+            <AlertCircle size={14} color="#b07020" />
+            <div>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', fontWeight: 600, color: '#b07020', margin: 0 }}>Tab switch detected</p>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', color: '#d09040', margin: 0 }}>One more will result in disqualification.</p>
             </div>
           </div>
         )}
 
-        {/* Dual Editors */}
-        <div className="flex-1 overflow-hidden flex bg-gradient-to-b from-slate-900/30 to-blue-950/20 min-h-0">
+        {/* Editors */}
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
+
           {/* Player 1 */}
-          <div className="flex-1 flex flex-col border-r border-white/10 relative overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-emerald-500/10 via-transparent to-cyan-500/10 border-b border-emerald-400/20 backdrop-blur-xl">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-xl border border-emerald-400/30 backdrop-blur-sm">
-                    <Zap className="h-4 w-4 text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Player 1 (You)</h3>
-                    <p className="text-xs text-emerald-300/90 font-medium">Live Editable</p>
-                  </div>
-                </div>
-                <TestIndicator passed={player1Tests} total={testCases.length} />
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid #ddd8d0', overflow: 'hidden' }}>
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid #ddd8d0', flexShrink: 0, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8rem', fontWeight: 600, color: '#1a1510', margin: 0 }}>Player 1 — You</p>
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', color: '#8a857f', margin: '0.125rem 0 0' }}>Live editable</p>
               </div>
-              <div className="text-xs font-mono text-emerald-300/80 bg-black/40 px-3 py-1 rounded-full inline-block">
-                {player1Tests}/{testCases.length} Tests
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                <TestDots passed={player1Tests} total={testCases.length} />
+                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', color: '#8a857f' }}>{player1Tests}/{testCases.length}</span>
               </div>
             </div>
-
-            <div className="relative flex-1 min-h-0">
-              <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-b from-slate-900/70 to-blue-950/70 backdrop-blur-sm border-r border-white/10 text-right pr-2 pt-3 text-xs font-mono text-slate-400 z-10 pointer-events-none">
-                {player1Code.split('\n').map((_, i) => (
-                  <div key={i} className="h-6 leading-6 select-none">{i + 1}</div>
-                ))}
-              </div>
-              <textarea
-                value={player1Code}
-                onChange={e => setPlayer1Code(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full h-full pl-12 p-4 bg-black/50 backdrop-blur-2xl text-white font-mono text-sm resize-none focus:outline-none border-0 caret-emerald-400 selection:bg-emerald-500/30 leading-[1.5]"
-                spellCheck="false"
-                autoFocus
-              />
-            </div>
-
-            <div className="px-6 py-4 border-t border-white/10 bg-gradient-to-r from-black/70 to-transparent backdrop-blur-xl">
-              <button
-                onClick={() => runTests(player1Code, true)}
-                disabled={timer === 0}
-                className="group flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-emerald-500 via-cyan-500 to-emerald-600 text-white rounded-xl font-semibold text-sm shadow-xl shadow-emerald-500/50 hover:shadow-emerald-500/70 hover:scale-[1.02] transition-all duration-300 hover:from-emerald-600 hover:via-cyan-600 hover:to-emerald-700 backdrop-blur-xl border border-emerald-400/40 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Play className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
-                Test Code
+            <textarea
+              value={player1Code}
+              onChange={e => setPlayer1Code(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="code-area"
+              style={{ flex: 1, padding: '1rem', background: '#faf8f5', color: '#1a1510' }}
+              spellCheck="false"
+              autoFocus
+            />
+            <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid #ddd8d0', flexShrink: 0, background: '#fff' }}>
+              <button onClick={() => runTests(player1Code, true)} disabled={timer === 0} style={{
+                width: '100%', height: 36, background: '#1a1510', border: 'none', color: '#F7F3EE',
+                fontFamily: "'DM Sans',sans-serif", fontWeight: 600, fontSize: '0.78rem',
+                letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                opacity: timer === 0 ? 0.45 : 1, transition: 'background 0.2s',
+              }}
+                onMouseEnter={e => { if (timer > 0) e.currentTarget.style.background = '#2e2820'; }}
+                onMouseLeave={e => e.currentTarget.style.background = '#1a1510'}>
+                <Play size={12} /> Run Tests
               </button>
             </div>
           </div>
 
           {/* Player 2 */}
-          <div className="flex-1 flex flex-col relative overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-slate-800/40 via-blue-900/20 to-slate-900/30 border-b border-blue-400/20 backdrop-blur-xl">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-gradient-to-br from-slate-500/30 to-blue-500/30 rounded-xl border border-slate-400/40 backdrop-blur-sm">
-                    <Zap className="h-4 w-4 text-slate-300" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Player 2 (Bot)</h3>
-                    <p className="text-xs text-slate-300/90 font-medium">Read-Only</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                  <TestIndicator passed={player2Tests} total={testCases.length} />
-                  <div className={`px-3 py-1 rounded-xl text-xs font-bold backdrop-blur-sm border shadow-md transition-all duration-300 ${
-                    timer > 0 
-                      ? 'bg-gradient-to-r from-orange-500/50 to-red-500/50 text-orange-100 border-orange-400/60 animate-pulse shadow-orange-500/40' 
-                      : 'bg-gradient-to-r from-emerald-500/50 to-cyan-500/50 text-emerald-100 border-emerald-400/60 shadow-emerald-500/40'
-                  }`}>
-                    {timer > 0 ? `${timer}s` : 'done'}
-                  </div>
-                </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: '1px solid #ddd8d0', flexShrink: 0, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8rem', fontWeight: 600, color: '#1a1510', margin: 0 }}>Player 2 — Bot</p>
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', color: '#8a857f', margin: '0.125rem 0 0' }}>Read only</p>
               </div>
-              <div className="text-xs font-mono text-slate-400/90 bg-slate-900/70 px-3 py-1 rounded-full inline-block">
-                {player2Tests}/{testCases.length} Tests
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                <TestDots passed={player2Tests} total={testCases.length} />
+                <span style={{
+                  fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', fontWeight: 700,
+                  color: timer > 0 ? '#b07020' : '#1a7a4a',
+                  padding: '0.15rem 0.5rem', border: `1px solid ${timer > 0 ? '#f5d87a' : '#a8dfc0'}`,
+                  background: timer > 0 ? '#fffbeb' : '#f0faf4',
+                }}>{timer > 0 ? `${timer}s` : 'done'}</span>
               </div>
             </div>
-
-            <div className="relative flex-1 min-h-0">
-              <div className="absolute inset-y-0 left-0 w-10 bg-gradient-to-b from-blue-950/80 to-slate-950/80 backdrop-blur-sm border-r border-white/10 text-right pr-2 pt-3 text-xs font-mono text-slate-500 z-10 pointer-events-none">
-                {player2Code.split('\n').map((_, i) => (
-                  <div key={i} className="h-6 leading-6 select-none">{i + 1}</div>
-                ))}
-              </div>
-              <textarea
-                value={player2Code}
-                readOnly
-                className="w-full h-full pl-12 p-4 bg-slate-950/70 backdrop-blur-2xl text-slate-300 font-mono text-sm resize-none focus:outline-none border-0 opacity-95 selection:bg-blue-500/40 leading-[1.5]"
-                spellCheck="false"
-              />
-            </div>
-
-            <div className="px-6 py-4 border-t border-white/10 bg-gradient-to-r from-slate-900/80 to-transparent backdrop-blur-xl">
-              <p className="text-sm text-slate-400 text-center font-semibold backdrop-blur-sm bg-black/50 px-4 py-2 rounded-xl inline-block shadow-lg shadow-black/30">
-                👁️ Watching live...
-              </p>
+            <textarea
+              value={player2Code}
+              readOnly
+              className="code-area"
+              style={{ flex: 1, padding: '1rem', background: '#F7F3EE', color: '#6b6460' }}
+              spellCheck="false"
+            />
+            <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid #ddd8d0', flexShrink: 0, background: '#fff', textAlign: 'center' }}>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', color: '#a0a09c', margin: 0 }}>👁 Watching live…</p>
             </div>
           </div>
         </div>
 
-        {/* Problem Details */}
-        <div className="px-6 py-4 bg-gradient-to-t from-black/80 to-transparent backdrop-blur-2xl border-t border-white/10">
-          <details className="cursor-pointer group">
-            <summary className="font-bold text-base text-white/95 hover:text-cyan-300 transition-all duration-300 flex items-center gap-2 group-hover:scale-105 p-1.5 rounded-xl hover:bg-white/5 backdrop-blur-sm">
-              📝 Problem Details
-              <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full animate-ping" />
-              <ChevronRight className="h-4 w-4 group-open:rotate-90 transition-transform duration-300 ml-auto" />
+        {/* Problem details */}
+        <div style={{ padding: '0 1.25rem', borderTop: '1px solid #ddd8d0', flexShrink: 0, background: '#fff' }}>
+          <details>
+            <summary style={{
+              fontFamily: "'DM Sans',sans-serif", fontSize: '0.8rem', fontWeight: 600,
+              color: '#4a4540', letterSpacing: '0.04em', textTransform: 'uppercase',
+              padding: '0.875rem 0', cursor: 'pointer', listStyle: 'none',
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+            }}>
+              <ChevronRight size={13} /> Problem Details
             </summary>
-            <div className="mt-4 p-6 bg-white/5 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-2xl shadow-black/40">
-              <p className="text-slate-300 mb-4 text-sm font-medium leading-relaxed">
+            <div style={{ paddingBottom: '1.25rem' }}>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.875rem', color: '#4a4540', lineHeight: 1.65, marginBottom: '1rem' }}>
                 {problem?.description}
               </p>
-              <div className="p-4 bg-gradient-to-br from-slate-900/70 to-blue-950/50 rounded-2xl border border-slate-700/50 backdrop-blur-xl mb-4 shadow-xl shadow-slate-900/50">
-                <div className="text-xs font-mono text-emerald-300/90 space-y-2">
-                  {testCases.map((tc, i) => (
-                    <div key={i} className="flex items-center gap-2 p-3 bg-black/30 rounded-xl backdrop-blur-sm border border-emerald-500/20 text-xs">
-                      <span className="font-bold text-emerald-400 min-w-[50px]">{tc.input}</span>
-                      <ChevronRight className="h-3 w-3 text-slate-500 flex-shrink-0" />
-                      <span className="font-bold text-emerald-400">{tc.expected}</span>
-                      <span className="ml-auto text-emerald-500 font-semibold">✓</span>
-                    </div>
-                  ))}
-                </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#ddd8d0', marginBottom: '1rem' }}>
+                {testCases.map((tc, i) => (
+                  <div key={i} style={{ background: '#F7F3EE', padding: '0.5rem 0.875rem', display: 'flex', alignItems: 'center', gap: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                    <span style={{ color: '#1955e6', fontWeight: 600 }}>{tc.input}</span>
+                    <ChevronRight size={11} color="#c0bbb5" />
+                    <span style={{ color: '#1a7a4a', fontWeight: 600 }}>{tc.expected}</span>
+                  </div>
+                ))}
               </div>
-              <div className="p-4 bg-gradient-to-br from-amber-500/15 to-orange-500/15 rounded-2xl border border-amber-400/40 backdrop-blur-xl shadow-xl shadow-amber-500/30">
-                <p className="text-sm text-amber-300 font-semibold">
-                  💡 <strong>Hint:</strong> Replace <code className="bg-black/60 px-2 py-0.5 rounded-lg text-amber-200 font-mono text-xs ml-1">return 0;</code> with your solution!
+              <div style={{ padding: '0.75rem 1rem', background: '#fffbeb', border: '1px solid #f5d87a' }}>
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', color: '#b07020', margin: 0 }}>
+                  💡 <strong>Hint:</strong> Replace <code style={{ background: '#fff', padding: '0.1rem 0.375rem', fontFamily: 'monospace' }}>return 0;</code> with your solution.
                 </p>
               </div>
             </div>
           </details>
         </div>
+
       </div>
     </div>
   );

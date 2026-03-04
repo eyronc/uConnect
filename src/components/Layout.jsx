@@ -3,20 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Bell, Search } from 'lucide-react';
 
-const T = {
-  canvas:    '#080C18',
-  header:    '#0D1117',
-  border:    '#1C2333',
-  text1:     '#E6EDF3',
-  text2:     '#7D8590',
-  text3:     '#3D4A5C',
-  inputBg:   '#0D1117',
-  inputBorder:'#21262D',
-  accent:    '#3B82F6',
-};
-
-const font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
 export default function Layout({ children, title }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,104 +15,88 @@ export default function Layout({ children, title }) {
   };
 
   return (
-    <div
-      className="flex h-screen"
-      style={{ backgroundColor: T.canvas, fontFamily: font }}
-    >
+    <div style={{ display: 'flex', height: '100vh', background: '#F7F3EE', fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+        * { box-sizing: border-box; }
+
+        .search-input {
+          height: 30px;
+          width: 180px;
+          padding: 0 0.625rem 0 2rem;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.8rem;
+          background: #fff;
+          border: 1.5px solid #ddd8d0;
+          color: #1a1510;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        .search-input:focus { border-color: #1955e6; }
+        .search-input::placeholder { color: #c0bbb5; }
+
+        .bell-btn {
+          width: 30px; height: 30px;
+          display: flex; align-items: center; justify-content: center;
+          background: transparent; border: none; cursor: pointer;
+          color: #8a857f; position: relative;
+          transition: color 0.15s;
+        }
+        .bell-btn:hover { color: #1a1510; }
+
+        .layout-main::-webkit-scrollbar { width: 4px; }
+        .layout-main::-webkit-scrollbar-track { background: transparent; }
+        .layout-main::-webkit-scrollbar-thumb { background: #ddd8d0; }
+      `}</style>
+
       <Sidebar />
 
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* ── Header ── Compact */}
-        <header
-          className="flex h-11 shrink-0 items-center justify-between px-4"
-          style={{
-            backgroundColor: T.header,
-            borderBottom: `1px solid ${T.border}`,
-          }}
-        >
-          {/* Page title */}
-          <h1
-            className="text-[13px] font-medium tracking-tight leading-none"
-            style={{ color: T.text1 }}
-          >
-            {title}
-          </h1>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+        {/* Header */}
+        <header style={{
+          height: 52, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 1.25rem',
+          background: '#F7F3EE',
+          borderBottom: '1px solid #ddd8d0',
+        }}>
+          <h1 style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: '1rem', fontWeight: 700,
+            color: '#1a1510', letterSpacing: '-0.01em',
+            margin: 0,
+          }}>{title}</h1>
 
-          <div className="flex items-center gap-1.5">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
             {/* Search */}
-            <div className="relative hidden md:block">
-              <Search
-                className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none"
-                style={{ width: 12, height: 12, color: T.text3 }}
-              />
+            <div style={{ position: 'relative' }} className="search-wrap">
+              <style>{`@media(max-width:767px){ .search-wrap{ display:none; } }`}</style>
+              <Search size={12} color="#c0bbb5" style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
               <input
                 type="text"
                 placeholder="Search…"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={handleSearch}
-                style={{
-                  fontFamily: font,
-                  height: 28,
-                  width: 180,
-                  paddingLeft: 26,
-                  paddingRight: 10,
-                  fontSize: 12,
-                  backgroundColor: T.inputBg,
-                  border: `1px solid ${T.inputBorder}`,
-                  borderRadius: 5,
-                  color: T.text1,
-                  outline: 'none',
-                }}
-                onFocus={e => {
-                  e.target.style.borderColor = T.accent;
-                  e.target.style.boxShadow = `0 0 0 2px rgba(59,130,246,.15)`;
-                }}
-                onBlur={e => {
-                  e.target.style.borderColor = T.inputBorder;
-                  e.target.style.boxShadow = 'none';
-                }}
+                className="search-input"
               />
             </div>
 
             {/* Bell */}
-            <button
-              onClick={() => navigate('/app/notifications')}
-              className="relative flex items-center justify-center rounded-md transition-all duration-150 p-1.5"
-              style={{
-                width: 28, height: 28,
-                color: T.text2,
-                backgroundColor: 'transparent',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.backgroundColor = '#161B27';
-                e.currentTarget.style.color = T.text1;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = T.text2;
-              }}
-            >
-              <Bell style={{ width: 14, height: 14 }} />
-              {/* Notification dot */}
-              <span
-                className="absolute -top-1 -right-1 rounded-full"
-                style={{
-                  width: 5, height: 5,
-                  backgroundColor: '#F59E0B',
-                  outline: `2px solid ${T.header}`,
-                  boxShadow: '0 0 0 1px rgba(255,255,255,0.1)',
-                }}
-              />
+            <button className="bell-btn" onClick={() => navigate('/app/notifications')}>
+              <Bell size={15} />
+              <span style={{
+                position: 'absolute', top: 5, right: 5,
+                width: 5, height: 5, borderRadius: '50%',
+                background: '#e8a030',
+                outline: '2px solid #F7F3EE',
+              }} />
             </button>
           </div>
         </header>
 
-        {/* ── Main content ── Compact padding */}
-        <main
-          className="flex-1 overflow-y-auto scrollbar-thin"
-          style={{ padding: 20, fontSize: '1rem' }}
-        >
+        {/* Main */}
+        <main className="layout-main" style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
           {children}
         </main>
       </div>

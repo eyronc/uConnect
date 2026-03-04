@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, CircleCheck as CheckCircle2, BookOpen, CreditCard, Loader2, Sparkles } from 'lucide-react';
+import { Clock, CircleCheck as CheckCircle2, BookOpen, CreditCard } from 'lucide-react';
 
 export default function Activities() {
   const { user } = useAuth();
@@ -11,48 +11,36 @@ export default function Activities() {
 
   const fetchAllActivities = useCallback(async () => {
     try {
-      // 1. Fetch recent enrollments with course names
-      const { data: enrollments } = await supabase
-        .from('enrollments')
-        .select('id, created_at, courses(course_name)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(8);
+      const [{ data: enrollments }, { data: payments }] = await Promise.all([
+        supabase.from('enrollments').select('id, created_at, courses(course_name)').eq('user_id', user.id).order('created_at', { ascending: false }).limit(8),
+        supabase.from('payments').select('id, created_at, description, amount, status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(8),
+      ]);
 
-      // 2. Fetch recent payments
-      const { data: payments } = await supabase
-        .from('payments')
-        .select('id, created_at, description, amount, status')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(8);
-
-      // 3. Combine and Format
       const combined = [
         ...(enrollments || []).map(e => ({
           id: `enr-${e.id}`,
           text: `Enrolled in ${e.courses?.course_name || 'New Subject'}`,
           time: new Date(e.created_at),
           icon: BookOpen,
-          color: 'text-blue-400',
-          bgColor: 'bg-blue-500/10',
-          borderColor: 'border-blue-500/20'
+          tag: 'Enrollment',
+          tagColor: '#1955e6',
+          tagBg: '#eef3ff',
+          tagBorder: '#c5d3ff',
         })),
         ...(payments || []).map(p => ({
           id: `pay-${p.id}`,
-          text: p.status === 'paid' 
-            ? `Successfully paid ₱${p.amount} for ${p.description}` 
-            : `New invoice generated: ₱${p.amount} for ${p.description}`,
+          text: p.status === 'paid'
+            ? `Paid ₱${p.amount} for ${p.description}`
+            : `Invoice generated: ₱${p.amount} for ${p.description}`,
           time: new Date(p.created_at),
           icon: p.status === 'paid' ? CheckCircle2 : CreditCard,
-          color: p.status === 'paid' ? 'text-emerald-400' : 'text-amber-400',
-          bgColor: p.status === 'paid' ? 'bg-emerald-500/10' : 'bg-amber-500/10',
-          borderColor: p.status === 'paid' ? 'border-emerald-500/20' : 'border-amber-500/20'
-        }))
-      ];
+          tag: p.status === 'paid' ? 'Paid' : 'Pending',
+          tagColor: p.status === 'paid' ? '#1a7a4a' : '#b07020',
+          tagBg:    p.status === 'paid' ? '#f0faf4' : '#fffbeb',
+          tagBorder:p.status === 'paid' ? '#a8dfc0' : '#f5d87a',
+        })),
+      ].sort((a, b) => b.time - a.time);
 
-      // Sort by newest first
-      combined.sort((a, b) => b.time - a.time);
       setActivities(combined);
     } catch (error) {
       console.error('Error:', error);
@@ -63,28 +51,16 @@ export default function Activities() {
 
   useEffect(() => {
     if (!user) return;
-
     fetchAllActivities();
-
-    // REALTIME SUBSCRIPTION
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'enrollments', filter: `user_id=eq.${user.id}` }, 
-        () => fetchAllActivities())
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'payments', filter: `user_id=eq.${user.id}` }, 
-        () => fetchAllActivities())
+    const channel = supabase.channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'enrollments', filter: `user_id=eq.${user.id}` }, fetchAllActivities)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payments',    filter: `user_id=eq.${user.id}` }, fetchAllActivities)
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => supabase.removeChannel(channel);
   }, [user, fetchAllActivities]);
 
   const formatTime = (date) => {
-    const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
+    const diff = Math.floor((new Date() - date) / 1000);
     if (diff < 60) return 'Just now';
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -93,49 +69,103 @@ export default function Activities() {
 
   return (
     <Layout title="Activity Feed">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">Recent Activity</h2>
-            <p className="text-slate-400 mt-1">Tracking your academic journey and transactions.</p>
-          </div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+        * { box-sizing: border-box; }
+        .f-display { font-family: 'Playfair Display', Georgia, serif; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .activity-item { animation: fadeUp 0.4s ease both; }
+        .activity-row:hover { background: #f0ebe4 !important; }
+      `}</style>
+
+      <div style={{ maxWidth: 720, margin: '0 auto', paddingBottom: '2rem' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div style={{ width: 36, height: 2, background: '#1955e6', marginBottom: '0.875rem' }} />
+          <h2 className="f-display" style={{ fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: 700, color: '#1a1510', letterSpacing: '-0.02em', margin: '0 0 0.375rem' }}>
+            Recent Activity
+          </h2>
+          <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.875rem', color: '#8a857f' }}>
+            Tracking your academic journey and transactions.
+          </p>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-slate-500 animate-pulse">Synchronizing feed...</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '40vh', gap: '1rem' }}>
+            <div style={{ width: 18, height: 18, border: '2px solid #ddd8d0', borderTopColor: '#1a1510', animation: 'spin 0.75s linear infinite' }} />
+            <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', color: '#b0aba5', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              Synchronizing feed…
+            </p>
           </div>
         ) : activities.length === 0 ? (
-          <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-16 text-center">
-            <Clock className="h-16 w-16 mx-auto mb-4 text-slate-700" />
-            <h3 className="text-xl font-medium text-slate-300">Quiet for now...</h3>
-            <p className="text-slate-500 mt-2">Activities will appear here as you interact with the portal.</p>
+          <div style={{ background: '#fff', border: '1px solid #e8e2db', padding: '4rem 2rem', textAlign: 'center' }}>
+            <div style={{ width: 48, height: 48, background: '#F7F3EE', border: '1px solid #e8e2db', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <Clock size={20} color="#c0bbb5" />
+            </div>
+            <h3 className="f-display" style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1a1510', marginBottom: '0.5rem' }}>Quiet for now</h3>
+            <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.875rem', color: '#a0a09c' }}>
+              Activities will appear here as you interact with the portal.
+            </p>
           </div>
         ) : (
-          <div className="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-800 before:to-transparent">
-            {activities.map((activity, idx) => {
-              const Icon = activity.icon;
-              return (
-                <div key={activity.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                  {/* Timeline Dot */}
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border border-slate-800 bg-slate-950 text-slate-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                    <Icon className={`h-5 w-5 ${activity.color}`} />
-                  </div>
-                  
-                  {/* Content Card */}
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border bg-slate-900/40 backdrop-blur-sm transition-all hover:bg-slate-900/60 hover:shadow-xl hover:shadow-primary/5 ${activity.borderColor}">
-                    <div className="flex items-center justify-between space-x-2 mb-1">
-                      <div className="font-bold text-white text-sm md:text-base">{activity.text}</div>
-                      <time className="font-medium text-xs text-primary whitespace-nowrap">{formatTime(activity.time)}</time>
+          /* Timeline */
+          <div style={{ position: 'relative' }}>
+            {/* Vertical line */}
+            <div style={{
+              position: 'absolute', left: 19, top: 0, bottom: 0,
+              width: 1, background: 'linear-gradient(to bottom, transparent, #ddd8d0 10%, #ddd8d0 90%, transparent)',
+              pointerEvents: 'none',
+            }} />
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+              {activities.map((activity, idx) => {
+                const Icon = activity.icon;
+                return (
+                  <div key={activity.id} className="activity-item" style={{ animationDelay: `${idx * 60}ms`, display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+
+                    {/* Icon dot */}
+                    <div style={{
+                      width: 38, height: 38, flexShrink: 0,
+                      background: '#fff', border: '1px solid #ddd8d0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      position: 'relative', zIndex: 1,
+                    }}>
+                      <Icon size={15} color="#1955e6" />
                     </div>
-                    <div className="text-slate-400 text-xs italic">
-                      Automated System Log • {activity.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+
+                    {/* Card */}
+                    <div className="activity-row" style={{
+                      flex: 1, background: '#fff', border: '1px solid #e8e2db',
+                      padding: '0.875rem 1.125rem', marginBottom: 1,
+                      transition: 'background 0.15s',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.875rem', fontWeight: 500, color: '#1a1510', margin: 0, flex: 1 }}>
+                          {activity.text}
+                        </p>
+                        <span style={{
+                          fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 600,
+                          letterSpacing: '0.08em', textTransform: 'uppercase',
+                          padding: '0.2rem 0.5rem',
+                          background: activity.tagBg, color: activity.tagColor, border: `1px solid ${activity.tagBorder}`,
+                          whiteSpace: 'nowrap', flexShrink: 0,
+                        }}>{activity.tag}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.375rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', color: '#1955e6', fontWeight: 600 }}>
+                          {formatTime(activity.time)}
+                        </span>
+                        <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', color: '#c0bbb5', fontStyle: 'italic' }}>
+                          System log · {activity.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
