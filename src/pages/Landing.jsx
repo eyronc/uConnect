@@ -397,36 +397,6 @@ export default function Landing() {
         </div>
       </section>
 
-<<<<<<< HEAD
-      {/* ── CTA ── */}
-      <section style={{ padding:'7rem 1.75rem', background:'#F7F3EE', textAlign:'center' }}>
-        <div style={{ maxWidth:560, margin:'0 auto' }}>
-          <h2 className="f-display" style={{
-            fontSize:'clamp(1.875rem,3.5vw,3rem)',
-            fontWeight:700, color:'#1a1510',
-            letterSpacing:'-0.025em', lineHeight:1.1, marginBottom:'1.25rem',
-          }}>
-            Ready to organize your{' '}
-            <em style={{ fontStyle:'italic', color:'#1955e6' }}>campus life?</em>
-          </h2>
-          <p style={{ color:'#7a756f', fontSize:'.9375rem', lineHeight:1.65, marginBottom:'2rem' }}>
-            Join thousands of students mastering their academic journey.
-          </p>
-          <Link to="/register" className="btn-dark">Start free today <ArrowRight size={13} /></Link>
-          <p style={{ marginTop:'1.25rem', fontSize:'.78rem', color:'#b0aba5' }}>
-            No credit card required · Free forever for students
-          </p>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <div style={{ borderTop:'1px solid #ddd8d0', padding:'1.25rem 1.75rem', textAlign:'center' }}>
-        <p style={{ fontSize:'.78rem', color:'#b0aba5' }}>© 2025 uConnect. All rights reserved.</p>
-      </div>
-    </div>
-  );
-}
-=======
       {/* Stats Section */}
       <section className="px-6 sm:px-8 py-24 relative overflow-hidden bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700">
         <div className="absolute inset-0 opacity-10 animate-pattern" style={{
@@ -511,4 +481,3 @@ export default function Landing() {
     </div>
   );
 }
->>>>>>> b714cb5f5cde64c99ecefc487ab784650b4ad57c
