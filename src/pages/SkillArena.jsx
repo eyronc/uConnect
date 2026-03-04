@@ -3,11 +3,7 @@ import Layout from '@/components/Layout';
 import CodeArena from '@/components/CodeArena';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Trophy, Code, Zap, Target, Award, 
-  TrendingUp, Clock, ChevronRight, 
-  Sparkles, Terminal, Flame
-} from 'lucide-react';
+import { Trophy, Code, Zap, Target, Award, TrendingUp, Clock, ChevronRight, Terminal, Flame } from 'lucide-react';
 
 export default function SkillArena() {
   const { user } = useAuth();
@@ -18,29 +14,18 @@ export default function SkillArena() {
   const [showCodeArena, setShowCodeArena] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState(null);
 
-  // static list of problems for demo
   const problems = [
     {
-      title: 'Sum Two Numbers',
-      difficulty: 'easy',
-      points: 50,
+      title: 'Sum Two Numbers', difficulty: 'easy', points: 50,
       description: 'Write a function that takes two numbers and returns their sum.',
-      testCases: [
-        { input: 'sumTwoNumbers(2, 3)', expected: 5 },
-        { input: 'sumTwoNumbers(5, 7)', expected: 12 },
-      ],
+      testCases: [{ input: 'sumTwoNumbers(2, 3)', expected: 5 }, { input: 'sumTwoNumbers(5, 7)', expected: 12 }],
       starterCode: `function sumTwoNumbers(a, b) {\n  // your code\n  return 0;\n}`,
       solution: `function sumTwoNumbers(a, b) {\n  return a + b;\n}`
     },
     {
-      title: 'Reverse String',
-      difficulty: 'medium',
-      points: 150,
+      title: 'Reverse String', difficulty: 'medium', points: 150,
       description: 'Return the input string reversed.',
-      testCases: [
-        { input: "reverse('abc')", expected: 'cba' },
-        { input: "reverse('hello')", expected: 'olleh' },
-      ],
+      testCases: [{ input: "reverse('abc')", expected: 'cba' }, { input: "reverse('hello')", expected: 'olleh' }],
       starterCode: `function reverse(s) {\n  // your code\n  return '';\n}`,
       solution: `function reverse(s) {\n  return s.split('').reverse().join('');\n}`
     },
@@ -48,7 +33,6 @@ export default function SkillArena() {
 
   useEffect(() => {
     if (!user) return;
-
     const fetchData = async () => {
       try {
         const [challengesRes, leaderboardRes, statsRes] = await Promise.all([
@@ -56,230 +40,240 @@ export default function SkillArena() {
           supabase.from('leaderboard').select('*, profiles!inner(full_name)').order('total_points', { ascending: false }).limit(10),
           supabase.from('leaderboard').select('*').eq('user_id', user.id).maybeSingle(),
         ]);
-
         setChallenges(challengesRes.data || []);
         setLeaderboard(leaderboardRes.data || []);
         setUserStats(statsRes.data);
-        setLoading(false);
       } catch (error) {
         console.error('Error:', error);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchData();
-
     const channel = supabase.channel('skill_arena_updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' }, () => fetchData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaderboard' }, fetchData)
       .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    return () => supabase.removeChannel(channel);
   }, [user]);
 
-  const getDiffStyle = (diff) => {
-    const d = diff?.toLowerCase();
-    if (d === 'easy') return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-    if (d === 'medium') return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-    return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+  const diffConfig = {
+    easy:   { color: '#1a7a4a', bg: '#f0faf4', border: '#a8dfc0' },
+    medium: { color: '#b07020', bg: '#fffbeb', border: '#f5d87a' },
+    hard:   { color: '#c83030', bg: '#fff4f4', border: '#f8c8c8' },
   };
 
-  if (loading) {
-    return (
-      <Layout title="Skill Arena">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <Terminal className="h-12 w-12 text-indigo-500 animate-pulse" />
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Initializing Arena...</p>
-        </div>
-      </Layout>
-    );
-  }
+  if (loading) return (
+    <Layout title="Skill Arena">
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '50vh', gap: '1rem' }}>
+        <div style={{ width: 18, height: 18, border: '2px solid #ddd8d0', borderTopColor: '#1a1510', animation: 'spin 0.75s linear infinite' }} />
+        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', color: '#b0aba5', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Initializing arena…</p>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    </Layout>
+  );
 
   return (
     <>
       <Layout title="Skill Arena">
-        <div className="max-w-7xl mx-auto space-y-10 pb-20 font-['Inter']">
-          
-          {/* Hero Header */}
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-slate-950 p-1 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-            <div className="relative z-10 bg-slate-900/90 rounded-[2.3rem] p-10 border border-white/5 backdrop-blur-3xl flex flex-col lg:flex-row items-center justify-between gap-8">
-              <div className="text-center lg:text-left">
-                <h2 className="text-5xl font-black text-white tracking-tighter mb-4">
-                  SKILL <span className="text-indigo-500">ARENA</span>
-                </h2>
-                <p className="text-slate-400 text-lg max-w-xl font-medium leading-relaxed">
-                  Conquer coding challenges, earn points, and solidify your status as a top-tier developer in the community.
-                </p>
-                <div className="flex flex-wrap gap-4 mt-8 justify-center lg:justify-start">
-                  <button 
-                    onClick={() => {
-                      const p = problems[Math.floor(Math.random() * problems.length)];
-                      setSelectedProblem(p);
-                      setShowCodeArena(true);
-                    }}
-                    className="group px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-indigo-900/40 flex items-center gap-3"
-                  >
-                    <Flame className="h-4 w-4 fill-current" />
-                    Enter the Pit
-                    <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                  <button className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-2xl font-black text-xs uppercase tracking-widest transition-all">
-                    Global Rules
-                  </button>
-                </div>
-              </div>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+          * { box-sizing: border-box; }
+          .f-display { font-family: 'Playfair Display', Georgia, serif; }
+          .challenge-card { transition: box-shadow 0.2s, border-color 0.2s; cursor: pointer; }
+          .challenge-card:hover { box-shadow: 0 6px 24px rgba(26,21,16,0.1); border-color: #1955e6 !important; }
+          .lb-row:hover { background: #f0ebe4 !important; }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
 
-              <div className="flex gap-6">
-                <div className="bg-slate-950/50 border border-white/5 p-8 rounded-[2rem] text-center min-w-[160px] backdrop-blur-md">
-                   <Trophy className="h-8 w-8 text-indigo-500 mx-auto mb-3" />
-                   <p className="text-3xl font-black text-white font-mono">{userStats?.total_points || 0}</p>
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Arena XP</p>
-                </div>
+        <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+          {/* Hero banner */}
+          <div style={{ background: '#1a1510', padding: '2rem 2.25rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 500, color: '#5a5550', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                Competitive Coding
+              </p>
+              <h2 className="f-display" style={{ fontSize: 'clamp(1.75rem, 3vw, 2.5rem)', fontWeight: 700, color: '#F7F3EE', letterSpacing: '-0.02em', lineHeight: 1.05, margin: '0 0 0.875rem' }}>
+                Skill <em style={{ color: '#7aabff' }}>Arena</em>
+              </h2>
+              <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+                <button onClick={() => { const p = problems[Math.floor(Math.random() * problems.length)]; setSelectedProblem(p); setShowCodeArena(true); }} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  background: '#F7F3EE', border: 'none', color: '#1a1510',
+                  fontFamily: "'DM Sans',sans-serif", fontSize: '0.78rem', fontWeight: 700,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  padding: '0.625rem 1.25rem', cursor: 'pointer',
+                  transition: 'background 0.15s',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#e8e2db'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#F7F3EE'}>
+                  <Flame size={13} /> Enter the Pit <ChevronRight size={11} />
+                </button>
+                <button style={{
+                  background: 'transparent', border: '1.5px solid rgba(255,255,255,0.1)',
+                  color: '#6b6560', fontFamily: "'DM Sans',sans-serif", fontSize: '0.78rem', fontWeight: 600,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  padding: '0.625rem 1.25rem', cursor: 'pointer',
+                }}>Global Rules</button>
               </div>
             </div>
-            {/* Background Accents */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+
+            {/* XP badge */}
+            <div style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', padding: '1.25rem 2rem', textAlign: 'center' }}>
+              <Trophy size={20} color="#7aabff" style={{ margin: '0 auto 0.5rem', display: 'block' }} />
+              <div className="f-display" style={{ fontSize: '2rem', fontWeight: 700, color: '#F7F3EE', letterSpacing: '-0.02em' }}>
+                {userStats?.total_points || 0}
+              </div>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 600, color: '#5a5550', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '0.25rem' }}>Arena XP</p>
+            </div>
+
+            <Terminal size={100} color="rgba(255,255,255,0.03)" style={{ position: 'absolute', right: -16, bottom: -20 }} />
           </div>
 
-          {/* Mini Stats Bar */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Mini stat bar */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1px', background: '#ddd8d0' }}>
             {[
-              { label: 'Cleared', val: userStats?.challenges_completed || 0, icon: Target, col: 'text-blue-400' },
-              { label: 'Global Rank', val: `#${userStats?.rank || '-'}`, icon: TrendingUp, col: 'text-emerald-400' },
-              { label: 'Achievements', val: userStats?.badges?.length || 0, icon: Award, col: 'text-purple-400' },
-              { label: 'Current Streak', val: '5 Days', icon: Zap, col: 'text-orange-400' }
-            ].map((s, i) => (
-              <div key={i} className="bg-slate-900/40 border border-white/5 p-5 rounded-2xl flex items-center gap-4 group hover:bg-slate-800/50 transition-colors">
-                <div className={`p-3 rounded-xl bg-white/5 ${s.col}`}>
-                  <s.icon className="h-5 w-5" />
+              { label: 'Cleared',       val: userStats?.challenges_completed || 0,   icon: Target,    color: '#1955e6' },
+              { label: 'Global Rank',   val: `#${userStats?.rank || '–'}`,           icon: TrendingUp, color: '#1a7a4a' },
+              { label: 'Achievements',  val: userStats?.badges?.length || 0,          icon: Award,      color: '#8b3de8' },
+              { label: 'Current Streak',val: '5 Days',                               icon: Zap,        color: '#b07020' },
+            ].map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={i} style={{ background: '#fff', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+                  <div style={{ width: 34, height: 34, background: s.color + '12', border: `1px solid ${s.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={15} color={s.color} />
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 600, color: '#a0a09c', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>{s.label}</p>
+                    <p className="f-display" style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1510', letterSpacing: '-0.01em', margin: 0 }}>{s.val}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</p>
-                  <p className="text-xl font-black text-white mt-0.5">{s.val}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            {/* Challenges List */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="flex items-center justify-between px-2">
-                <h3 className="text-xl font-black text-white flex items-center gap-3">
-                  <div className="h-6 w-1 bg-indigo-500 rounded-full" />
-                  Mission Board
-                </h3>
+          {/* Two-column: missions + leaderboard */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1px', background: '#ddd8d0', alignItems: 'start' }}>
+
+            {/* Mission board */}
+            <div style={{ background: '#fff', padding: '1.75rem' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ width: 28, height: 2, background: '#1955e6', marginBottom: '0.75rem' }} />
+                <h3 className="f-display" style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1a1510', margin: 0 }}>Mission Board</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {challenges.length > 0 ? challenges.map((challenge) => (
-                  <div
-                    key={challenge.id}
-                    className="group bg-slate-900/40 border border-white/5 rounded-3xl p-6 hover:bg-slate-900 hover:border-indigo-500/30 transition-all duration-300 cursor-pointer relative overflow-hidden"
-                  >
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                        <Code className="h-6 w-6" />
-                      </div>
-                      <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${getDiffStyle(challenge.difficulty)}`}>
-                        {challenge.difficulty}
-                      </span>
-                    </div>
-
-                    <h4 className="text-lg font-black text-white mb-2 group-hover:text-indigo-400 transition-colors uppercase tracking-tight">
-                      {challenge.title}
-                    </h4>
-                    <p className="text-sm text-slate-500 font-medium mb-6 line-clamp-2">
-                      {challenge.description}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-6 border-t border-white/5">
-                      <div className="flex items-center gap-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                        <span className="flex items-center gap-1.5 text-indigo-400">
-                          <Trophy className="h-3.5 w-3.5" />
-                          {challenge.points} XP
-                        </span>
-                        {challenge.time_limit_minutes && (
-                          <span className="flex items-center gap-1.5">
-                            <Clock className="h-3.5 w-3.5" />
-                            {challenge.time_limit_minutes}m
+              {challenges.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1px', background: '#ddd8d0' }}>
+                  {challenges.map(challenge => {
+                    const diff = diffConfig[challenge.difficulty?.toLowerCase()] || diffConfig.easy;
+                    return (
+                      <div key={challenge.id} className="challenge-card" style={{ background: '#faf8f5', border: '1px solid transparent', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.875rem' }}>
+                          <div style={{ width: 34, height: 34, background: '#F7F3EE', border: '1px solid #e8e2db', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Code size={15} color="#1955e6" />
+                          </div>
+                          <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '0.2rem 0.5rem', background: diff.bg, border: `1px solid ${diff.border}`, color: diff.color }}>
+                            {challenge.difficulty}
                           </span>
-                        )}
-                      </div>
-                      <span className="text-xs font-black text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                        DEPLOY →
-                      </span>
-                    </div>
-                  </div>
-                )) : (
-                   <div className="col-span-2 py-20 bg-slate-900/20 border border-dashed border-white/10 rounded-3xl text-center">
-                      <Terminal className="h-10 w-10 text-slate-700 mx-auto mb-4" />
-                      <p className="text-xs font-black text-slate-500 uppercase tracking-widest">No Active Missions</p>
-                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Leaderboard Sidebar */}
-            <div className="space-y-6">
-               <h3 className="text-xl font-black text-white flex items-center gap-3 px-2">
-                  <Flame className="h-5 w-5 text-orange-500" /> Top Gladiators
-                </h3>
-
-               <div className="bg-slate-950/50 border border-white/5 rounded-[2.5rem] p-6 backdrop-blur-md">
-                  <div className="space-y-2">
-                    {leaderboard.map((entry, index) => {
-                      const isCurrentUser = entry.user_id === user.id;
-                      const isTop3 = index < 3;
-
-                      return (
-                        <div
-                          key={entry.id}
-                          className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                            isCurrentUser ? 'bg-indigo-600/20 border border-indigo-500/30 shadow-lg' : 'hover:bg-white/5 border border-transparent'
-                          }`}
-                        >
-                          <div className={`h-10 w-10 shrink-0 rounded-xl flex items-center justify-center font-black text-sm
-                            ${index === 0 ? 'bg-gradient-to-br from-yellow-400 to-amber-600 text-slate-900 shadow-lg shadow-yellow-500/20' : 
-                              index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-500 text-slate-900' :
-                              index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-700 text-slate-900' :
-                              'bg-slate-900 text-slate-500 border border-white/5'}`}
-                          >
-                            {index + 1}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black text-white truncate uppercase tracking-tight">
-                              {entry.profiles?.full_name?.split(' ')[0] || 'Unknown'}
-                              {isCurrentUser && <span className="ml-2 text-[10px] text-indigo-400 font-black italic">YOU</span>}
-                            </p>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">
-                              {entry.challenges_completed} Missions Cleared
-                            </p>
-                          </div>
-
-                          <div className="text-right">
-                            <p className="text-sm font-black text-white font-mono">{entry.total_points}</p>
-                            <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">XP</p>
-                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                  
-                  <button className="w-full mt-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 transition-all">
-                    View Full Standings
-                  </button>
-               </div>
+                        <h4 style={{ fontFamily: "'Playfair Display',serif", fontSize: '0.9375rem', fontWeight: 600, color: '#1a1510', margin: '0 0 0.375rem', textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.25 }}>
+                          {challenge.title}
+                        </h4>
+                        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.78rem', color: '#8a857f', lineHeight: 1.55, marginBottom: '0.875rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {challenge.description}
+                        </p>
+                        <div style={{ borderTop: '1px solid #e8e2db', paddingTop: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.875rem' }}>
+                            <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', fontWeight: 600, color: '#1955e6', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <Trophy size={10} /> {challenge.points} XP
+                            </span>
+                            {challenge.time_limit_minutes && (
+                              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', color: '#a0a09c', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <Clock size={10} /> {challenge.time_limit_minutes}m
+                              </span>
+                            )}
+                          </div>
+                          <ChevronRight size={13} color="#c0bbb5" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ padding: '3rem', textAlign: 'center', background: '#faf8f5', border: '1px dashed #ddd8d0' }}>
+                  <Terminal size={28} color="#ddd8d0" style={{ margin: '0 auto 0.875rem' }} />
+                  <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', color: '#c0bbb5', textTransform: 'uppercase', letterSpacing: '0.08em' }}>No active missions</p>
+                </div>
+              )}
             </div>
+
+            {/* Leaderboard */}
+            <div style={{ background: '#fff', padding: '1.75rem' }}>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <div style={{ width: 28, height: 2, background: '#b07020', marginBottom: '0.75rem' }} />
+                <h3 className="f-display" style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1a1510', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Flame size={15} color="#b07020" /> Top Players
+                </h3>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#ddd8d0', marginBottom: '0.875rem' }}>
+                {leaderboard.map((entry, index) => {
+                  const isMe = entry.user_id === user.id;
+                  const rankColors = ['#c87d10', '#6b6460', '#b07020'];
+                  return (
+                    <div key={entry.id} className="lb-row" style={{
+                      background: isMe ? '#eef3ff' : '#faf8f5',
+                      padding: '0.75rem 0.875rem',
+                      display: 'flex', alignItems: 'center', gap: '0.75rem',
+                      borderLeft: isMe ? '2px solid #1955e6' : '2px solid transparent',
+                      transition: 'background 0.15s',
+                    }}>
+                      <div style={{
+                        width: 26, height: 26, flexShrink: 0,
+                        background: index < 3 ? rankColors[index] + '18' : '#F7F3EE',
+                        border: `1px solid ${index < 3 ? rankColors[index] + '40' : '#e8e2db'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: "'DM Sans',sans-serif", fontWeight: 700,
+                        fontSize: '0.7rem', color: index < 3 ? rankColors[index] : '#a0a09c',
+                      }}>{index + 1}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', fontWeight: 600, color: isMe ? '#1955e6' : '#1a1510', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {entry.profiles?.full_name?.split(' ')[0] || 'Unknown'}
+                          {isMe && <span style={{ fontSize: '0.65rem', color: '#1955e6', marginLeft: '0.375rem', fontStyle: 'italic' }}>you</span>}
+                        </p>
+                        <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.68rem', color: '#a0a09c', margin: '0.1rem 0 0' }}>
+                          {entry.challenges_completed} cleared
+                        </p>
+                      </div>
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <span className="f-display" style={{ fontSize: '0.9375rem', fontWeight: 700, color: '#1a1510' }}>{entry.total_points}</span>
+                        <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.6rem', color: '#1955e6', fontWeight: 700, marginLeft: 3 }}>XP</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button style={{
+                width: '100%', height: 36,
+                background: 'transparent', border: '1.5px solid #ddd8d0',
+                fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', fontWeight: 600,
+                color: '#8a857f', letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer',
+                transition: 'border-color 0.2s, color 0.2s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = '#1a1510'; e.currentTarget.style.color = '#1a1510'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#ddd8d0'; e.currentTarget.style.color = '#8a857f'; }}>
+                View Full Standings
+              </button>
+            </div>
+
           </div>
         </div>
       </Layout>
 
       {showCodeArena && selectedProblem && (
-        <CodeArena
-          onClose={() => setShowCodeArena(false)}
-          problem={selectedProblem}
-        />
+        <CodeArena onClose={() => setShowCodeArena(false)} problem={selectedProblem} />
       )}
     </>
   );

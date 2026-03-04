@@ -2,16 +2,17 @@ import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Users, Calendar, MapPin, UserPlus, CircleCheck as CheckCircle2, 
-  Code, Palette, BarChart3, Heart, Zap, X, Clock 
+import {
+  Users, Calendar, MapPin, UserPlus,
+  CircleCheck as CheckCircle2, Code, Palette,
+  BarChart3, Heart, Zap, X, Clock
 } from 'lucide-react';
 
 export default function Clubs() {
   const { user } = useAuth();
   const [clubs, setClubs] = useState([]);
-  const [memberships, setMemberships] = useState(new Set()); // Only 'active' status
-  const [pendingApplications, setPendingApplications] = useState(new Set()); // Only 'pending' status
+  const [memberships, setMemberships] = useState(new Set());
+  const [pendingApplications, setPendingApplications] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
@@ -19,12 +20,12 @@ export default function Clubs() {
   const [applicationForm, setApplicationForm] = useState({ reason: '', interests: '' });
 
   const staticClubs = [
-    { id: 'static-1', name: 'Programming & Coding Club', description: 'Learn and collaborate on programming projects. From web development to competitive coding.', meeting_schedule: 'Tue & Thu 6 PM', location: 'Lab 1', member_count: 45, icon: Code, gradient: 'from-blue-600 to-indigo-600' },
-    { id: 'static-2', name: 'Design & Creative Arts', description: 'Express yourself through digital and traditional art. Share creations and learn from peers.', meeting_schedule: 'Wed 5 PM', location: 'Arts Studio', member_count: 32, icon: Palette, gradient: 'from-pink-500 to-rose-500' },
-    { id: 'static-3', name: 'Business & Entrepreneurship', description: 'Build business skills, network with innovators, and launch startup ideas with mentors.', meeting_schedule: 'Mon 7 PM', location: 'Business Center', member_count: 38, icon: BarChart3, gradient: 'from-emerald-500 to-teal-600' },
-    { id: 'static-4', name: 'Community Service', description: 'Make a difference in the community through volunteer projects and social initiatives.', meeting_schedule: 'Sat 9 AM', location: 'Student Center', member_count: 56, icon: Heart, gradient: 'from-orange-500 to-red-500' },
-    { id: 'static-5', name: 'Innovation Lab', description: 'Explore cutting-edge science, conduct experiments, and collaborate on research projects.', meeting_schedule: 'Fri 4 PM', location: 'Science Lab 3', member_count: 28, icon: Zap, gradient: 'from-amber-400 to-orange-500' },
-    { id: 'static-6', name: 'Cultural Exchange', description: 'Celebrate diversity through events, food, and cultural exchanges from around the world.', meeting_schedule: 'Sun 6 PM', location: 'Hall A', member_count: 41, icon: Users, gradient: 'from-violet-500 to-purple-600' },
+    { id: 'static-1', name: 'Programming & Coding Club',  description: 'Learn and collaborate on programming projects. From web development to competitive coding.', meeting_schedule: 'Tue & Thu 6 PM', location: 'Lab 1',              member_count: 45, icon: Code,     accentColor: '#1955e6' },
+    { id: 'static-2', name: 'Design & Creative Arts',     description: 'Express yourself through digital and traditional art. Share creations and learn from peers.',  meeting_schedule: 'Wed 5 PM',      location: 'Arts Studio',          member_count: 32, icon: Palette,  accentColor: '#c840a0' },
+    { id: 'static-3', name: 'Business & Entrepreneurship',description: 'Build business skills, network with innovators, and launch startup ideas with mentors.',         meeting_schedule: 'Mon 7 PM',      location: 'Business Center',      member_count: 38, icon: BarChart3,accentColor: '#1a7a4a' },
+    { id: 'static-4', name: 'Community Service',          description: 'Make a difference through volunteer projects and social initiatives.',                           meeting_schedule: 'Sat 9 AM',      location: 'Student Center',       member_count: 56, icon: Heart,    accentColor: '#c83030' },
+    { id: 'static-5', name: 'Innovation Lab',             description: 'Explore cutting-edge science, conduct experiments, and collaborate on research projects.',       meeting_schedule: 'Fri 4 PM',      location: 'Science Lab 3',        member_count: 28, icon: Zap,      accentColor: '#b07020' },
+    { id: 'static-6', name: 'Cultural Exchange',          description: 'Celebrate diversity through events, food, and cultural exchanges from around the world.',        meeting_schedule: 'Sun 6 PM',      location: 'Hall A',               member_count: 41, icon: Users,    accentColor: '#6b3de8' },
   ];
 
   useEffect(() => {
@@ -35,19 +36,13 @@ export default function Clubs() {
           supabase.from('clubs').select('*').eq('status', 'active'),
           supabase.from('club_memberships').select('club_id, status').eq('user_id', user.id),
         ]);
-
         const fetchedClubs = clubsRes.data || [];
         setClubs(fetchedClubs.length ? fetchedClubs : staticClubs);
-
-        // Separate IDs into Active (Members) and Pending (Applied)
-        const active = new Set();
-        const pending = new Set();
-
+        const active = new Set(), pending = new Set();
         membershipsRes.data?.forEach(row => {
-          if (row.status === 'active') active.add(row.club_id);
+          if (row.status === 'active')  active.add(row.club_id);
           if (row.status === 'pending') pending.add(row.club_id);
         });
-
         setMemberships(active);
         setPendingApplications(pending);
       } catch (error) {
@@ -69,19 +64,11 @@ export default function Clubs() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('club_memberships').insert([
-        { 
-          user_id: user.id, 
-          club_id: selectedClub.id, 
-          status: 'pending',
-          reason: applicationForm.reason, // Assumes you added this column to your DB
-          interests: applicationForm.interests // Assumes you added this column to your DB
-        },
-      ]);
-      
+      const { error } = await supabase.from('club_memberships').insert([{
+        user_id: user.id, club_id: selectedClub.id, status: 'pending',
+        reason: applicationForm.reason, interests: applicationForm.interests,
+      }]);
       if (error) throw error;
-
-      // Update UI state to show as pending
       setPendingApplications(prev => new Set([...prev, selectedClub.id]));
       setApplicationModalOpen(false);
     } catch (error) {
@@ -92,76 +79,114 @@ export default function Clubs() {
   };
 
   if (loading) return (
-    <Layout title="Clubs">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-pulse">
-        {[...Array(6)].map((_, i) => <div key={i} className="h-80 bg-slate-200 rounded-2xl" />)}
+    <Layout title="Student Clubs">
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <div style={{ width: 18, height: 18, border: '2px solid #ddd8d0', borderTopColor: '#1a1510', animation: 'spin 0.75s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     </Layout>
   );
 
   return (
     <Layout title="Student Clubs">
-      <div className="space-y-8 pb-12">
-        
-        {/* Hero Header */}
-        <div className="relative overflow-hidden bg-slate-900 rounded-3xl p-8 md:p-12 text-white shadow-2xl">
-          <div className="relative z-10 max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">
-              Discover Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Community.</span>
-            </h1>
-            <p className="text-slate-400 text-lg leading-relaxed">Join student-led organizations to develop new skills and build your network.</p>
-          </div>
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-600/20 blur-[100px] rounded-full" />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+        * { box-sizing: border-box; }
+        .f-display { font-family: 'Playfair Display', Georgia, serif; }
+        .club-card { transition: box-shadow 0.2s; }
+        .club-card:hover { box-shadow: 0 8px 28px rgba(26,21,16,0.1); }
+        .field-input { outline: none; transition: border-color 0.2s; font-family: 'DM Sans', sans-serif; }
+        .field-input:focus { border-color: #1955e6 !important; }
+        .field-input::placeholder { color: #c0bbb5; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .modal-body { animation: slideUp 0.22s ease both; }
+      `}</style>
+
+      <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+        {/* Hero banner */}
+        <div style={{ background: '#1a1510', padding: '2rem 2.25rem', position: 'relative', overflow: 'hidden' }}>
+          <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 500, color: '#5a5550', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            Student Organizations
+          </p>
+          <h2 className="f-display" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.25rem)', fontWeight: 700, color: '#F7F3EE', letterSpacing: '-0.02em', lineHeight: 1.1, margin: '0 0 0.5rem' }}>
+            Discover your <em style={{ color: '#7aabff', fontStyle: 'italic' }}>community.</em>
+          </h2>
+          <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.875rem', color: '#5a5550', maxWidth: 480, margin: 0 }}>
+            Join student-led organizations to develop skills and build your network.
+          </p>
+          <Users size={110} color="rgba(255,255,255,0.03)" style={{ position: 'absolute', right: -16, bottom: -20 }} />
         </div>
 
-        {/* Club Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clubs.map((club) => {
-            const isMember = memberships.has(club.id);
+        {/* Club grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1px', background: '#ddd8d0' }}>
+          {clubs.map(club => {
+            const isMember  = memberships.has(club.id);
             const isPending = pendingApplications.has(club.id);
-            const ClubIcon = club.icon || Users;
+            const ClubIcon  = club.icon || Users;
+            const accent    = club.accentColor || '#1955e6';
 
             return (
-              <div key={club.id} className="group bg-white border border-slate-200 rounded-2xl overflow-hidden hover:border-blue-400 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300 flex flex-col">
-                <div className={`h-32 bg-gradient-to-br ${club.gradient || 'from-slate-700 to-slate-900'} relative`}>
-                  <div className="absolute bottom-[-24px] left-6 p-4 bg-white rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                    <ClubIcon className="h-8 w-8 text-slate-700" />
+              <div key={club.id} className="club-card" style={{ background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                {/* Accent top bar */}
+                <div style={{ height: 4, background: accent }} />
+
+                {/* Icon strip */}
+                <div style={{ padding: '1.25rem 1.375rem 0.875rem', display: 'flex', alignItems: 'center', gap: '0.875rem', borderBottom: '1px solid #e8e2db' }}>
+                  <div style={{ width: 40, height: 40, flexShrink: 0, background: accent + '14', border: `1px solid ${accent}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ClubIcon size={18} color={accent} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <h3 style={{ fontFamily: "'Playfair Display',serif", fontSize: '1rem', fontWeight: 600, color: '#1a1510', margin: 0, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {club.name}
+                    </h3>
+                    <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.72rem', color: '#a0a09c', margin: '0.15rem 0 0' }}>
+                      {club.member_count} members
+                    </p>
                   </div>
                 </div>
 
-                <div className="p-6 pt-10 flex-grow space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900">{club.name}</h3>
-                    <p className="text-slate-500 text-sm mt-2 line-clamp-2 leading-relaxed">{club.description}</p>
+                <div style={{ padding: '1rem 1.375rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                  <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', color: '#6b6460', lineHeight: 1.6, marginBottom: '0.875rem', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {club.description}
+                  </p>
+
+                  <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                    {[
+                      { icon: Calendar, text: club.meeting_schedule },
+                      { icon: MapPin,   text: club.location          },
+                    ].map(({ icon: Icon, text }, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: '#F7F3EE', border: '1px solid #e8e2db', padding: '0.25rem 0.5rem' }}>
+                        <Icon size={10} color="#c0bbb5" />
+                        <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 500, color: '#6b6460' }}>{text}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 pt-2">
-                    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-tight text-slate-500 bg-slate-50 p-2 rounded-lg">
-                      <Calendar className="h-3.5 w-3.5 text-blue-500" />
-                      {club.meeting_schedule}
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-tight text-slate-500 bg-slate-50 p-2 rounded-lg">
-                      <MapPin className="h-3.5 w-3.5 text-rose-500" />
-                      {club.location}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="px-6 pb-6 mt-auto">
                   {isMember ? (
-                    <div className="w-full py-2.5 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center gap-2 font-bold text-sm border border-emerald-100 shadow-sm">
-                      <CheckCircle2 className="h-4 w-4" /> Joined Club
+                    <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f0faf4', border: '1px solid #a8dfc0', color: '#1a7a4a' }}>
+                      <CheckCircle2 size={13} />
+                      <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', fontWeight: 600 }}>Joined</span>
                     </div>
                   ) : isPending ? (
-                    <div className="w-full py-2.5 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center gap-2 font-bold text-sm border border-slate-200 shadow-inner">
-                      <Clock className="h-4 w-4" /> Application Pending
+                    <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#fffbeb', border: '1px solid #f5d87a', color: '#b07020' }}>
+                      <Clock size={13} />
+                      <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', fontWeight: 600 }}>Application Pending</span>
                     </div>
                   ) : (
-                    <button 
-                      onClick={() => handleOpenApplication(club)}
-                      className="w-full py-2.5 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
-                    >
-                      <UserPlus className="h-4 w-4" /> Join Club
+                    <button onClick={() => handleOpenApplication(club)} style={{
+                      width: '100%', height: 36,
+                      background: 'transparent', border: `1.5px solid ${accent}`,
+                      color: accent, fontFamily: "'DM Sans',sans-serif",
+                      fontSize: '0.75rem', fontWeight: 700,
+                      letterSpacing: '0.06em', textTransform: 'uppercase', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem',
+                      transition: 'background 0.15s, color 0.15s',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.background = accent; e.currentTarget.style.color = '#fff'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = accent; }}>
+                      <UserPlus size={12} /> Join Club
                     </button>
                   )}
                 </div>
@@ -169,58 +194,71 @@ export default function Clubs() {
             );
           })}
         </div>
+      </div>
 
-        {/* Modal Logic Remains the same as previous refined version */}
-        {applicationModalOpen && selectedClub && (
-          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-              <div className={`h-2 bg-gradient-to-r ${selectedClub.gradient || 'from-blue-600 to-indigo-600'}`} />
-              <div className="p-8">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h4 className="text-2xl font-black text-slate-900">Apply to Join</h4>
-                    <p className="text-slate-500 text-sm font-medium">{selectedClub.name}</p>
-                  </div>
-                  <button onClick={() => setApplicationModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full">
-                    <X className="h-6 w-6 text-slate-400" />
-                  </button>
+      {/* Application modal */}
+      {applicationModalOpen && selectedClub && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(26,21,16,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="modal-body" style={{ background: '#F7F3EE', border: '1px solid #ddd8d0', width: '100%', maxWidth: 440, overflow: 'hidden', boxShadow: '0 24px 64px rgba(26,21,16,0.2)', fontFamily: "'DM Sans',sans-serif" }}>
+            <div style={{ height: 4, background: selectedClub.accentColor || '#1955e6' }} />
+            <div style={{ padding: '1.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <div>
+                  <h4 className="f-display" style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1a1510', margin: '0 0 0.25rem' }}>Apply to Join</h4>
+                  <p style={{ fontSize: '0.8125rem', color: '#8a857f', margin: 0 }}>{selectedClub.name}</p>
                 </div>
-
-                <form onSubmit={handleSubmitApplication} className="space-y-5">
-                  <div className="space-y-1.5">
-                    <label className="text-[13px] font-bold text-slate-700 uppercase">Statement of Interest</label>
-                    <textarea
-                      className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none resize-none"
-                      rows={4}
-                      value={applicationForm.reason}
-                      onChange={(e) => setApplicationForm({...applicationForm, reason: e.target.value})}
-                      placeholder="Why do you want to join?"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[13px] font-bold text-slate-700 uppercase">Relevant Skills</label>
-                    <input
-                      type="text"
-                      className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 text-sm focus:border-blue-500 focus:outline-none"
-                      value={applicationForm.interests}
-                      onChange={(e) => setApplicationForm({...applicationForm, interests: e.target.value})}
-                      placeholder="e.g. Design, Coding, etc."
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-all disabled:opacity-50"
-                  >
-                    {submitting ? 'Processing...' : 'Submit Application'}
-                  </button>
-                </form>
+                <button onClick={() => setApplicationModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0a09c', display: 'flex', marginTop: 2 }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#1a1510'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#a0a09c'}>
+                  <X size={15} />
+                </button>
               </div>
+
+              <form onSubmit={handleSubmitApplication} style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#6b6460', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                    Statement of Interest
+                  </label>
+                  <textarea
+                    className="field-input"
+                    rows={4}
+                    value={applicationForm.reason}
+                    onChange={e => setApplicationForm({ ...applicationForm, reason: e.target.value })}
+                    placeholder="Why do you want to join?"
+                    required
+                    style={{ width: '100%', padding: '0.75rem 1rem', background: '#fff', border: '1.5px solid #ddd8d0', color: '#1a1510', fontSize: '0.875rem', resize: 'none' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, color: '#6b6460', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                    Relevant Skills
+                  </label>
+                  <input
+                    type="text"
+                    className="field-input"
+                    value={applicationForm.interests}
+                    onChange={e => setApplicationForm({ ...applicationForm, interests: e.target.value })}
+                    placeholder="e.g. Design, Coding, etc."
+                    style={{ width: '100%', height: 46, padding: '0 1rem', background: '#fff', border: '1.5px solid #ddd8d0', color: '#1a1510', fontSize: '0.875rem' }}
+                  />
+                </div>
+                <button type="submit" disabled={submitting} style={{
+                  width: '100%', height: 44,
+                  background: submitting ? '#ddd8d0' : '#1a1510',
+                  border: 'none', color: submitting ? '#a0a09c' : '#F7F3EE',
+                  fontFamily: "'DM Sans',sans-serif", fontSize: '0.8rem', fontWeight: 700,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  cursor: submitting ? 'not-allowed' : 'pointer', transition: 'background 0.2s',
+                }}
+                  onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = '#2e2820'; }}
+                  onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = '#1a1510'; }}>
+                  {submitting ? 'Processing…' : 'Submit Application'}
+                </button>
+              </form>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </Layout>
   );
 }

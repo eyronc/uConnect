@@ -2,59 +2,43 @@ import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  User, Mail, Phone, MapPin, Calendar, Save, Loader2, 
-  ShieldCheck, Smartphone, GraduationCap, Building2, BadgeCheck 
-} from 'lucide-react';
+import { User, Mail, Phone, MapPin, Calendar, Save, Loader2, ShieldCheck, GraduationCap, Building2, BadgeCheck } from 'lucide-react';
 
 export default function Settings() {
   const { user, profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [formData, setFormData] = useState({
-    full_name: '',
-    phone: '',
-    date_of_birth: '',
-    address: '',
-    emergency_contact: '',
-    emergency_phone: '',
+    full_name: '', phone: '', date_of_birth: '',
+    address: '', emergency_contact: '', emergency_phone: '',
   });
 
   useEffect(() => {
     if (profile) {
       setFormData({
-        full_name: profile.full_name || '',
-        phone: profile.phone || '',
-        date_of_birth: profile.date_of_birth || '',
-        address: profile.address || '',
-        emergency_contact: profile.emergency_contact || '',
-        emergency_phone: profile.emergency_phone || '',
+        full_name:          profile.full_name          || '',
+        phone:              profile.phone              || '',
+        date_of_birth:      profile.date_of_birth      || '',
+        address:            profile.address            || '',
+        emergency_contact:  profile.emergency_contact  || '',
+        emergency_phone:    profile.emergency_phone    || '',
       });
     }
   }, [profile]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ text: '', type: '' });
-
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          ...formData,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-
+      const { error } = await supabase.from('profiles').upsert({
+        user_id: user.id, ...formData, updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
       if (error) throw error;
       if (refreshProfile) await refreshProfile();
-      
-      setMessage({ text: 'Changes saved successfully ✨', type: 'success' });
+      setMessage({ text: 'Changes saved successfully.', type: 'success' });
       setTimeout(() => setMessage({ text: '', type: '' }), 4000);
     } catch (error) {
       setMessage({ text: error.message, type: 'error' });
@@ -63,192 +47,204 @@ export default function Settings() {
     }
   };
 
-  // Shared class for the deep dark cards
-  const cardStyle = "bg-[#0a0c14] border border-[#1a1d29] rounded-[2rem] p-8 shadow-2xl transition-all hover:border-[#2a2f42]";
-  const inputStyle = "w-full px-4 py-3 bg-[#131622] border border-[#1f2335] focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 rounded-xl text-sm text-slate-200 transition-all outline-none placeholder:text-slate-600";
-  const labelStyle = "text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 mb-2 block";
+  const initial = (formData.full_name?.charAt(0) || user?.email?.charAt(0) || 'S').toUpperCase();
 
   return (
     <Layout title="Account Settings">
-      <div className="max-w-6xl mx-auto space-y-8 pb-12 px-4">
-        
-        {/* Profile Hero Section */}
-        <div className="relative overflow-hidden bg-[#0a0c14] border border-[#1a1d29] rounded-[2.5rem] p-10 text-white shadow-2xl">
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-            <div className="relative">
-              <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-4xl font-black shadow-[0_0_30px_rgba(37,99,235,0.3)]">
-                {formData.full_name?.charAt(0) || user?.email?.charAt(0).toUpperCase()}
-              </div>
-              <div className="absolute -bottom-2 -right-2 p-2 bg-emerald-500 rounded-full border-[6px] border-[#0a0c14]">
-                <BadgeCheck className="h-5 w-5 text-white" />
-              </div>
-            </div>
-            <div className="text-center md:text-left space-y-2">
-              <h2 className="text-3xl font-black tracking-tight text-slate-100">{formData.full_name || 'New Student'}</h2>
-              <p className="text-blue-400 font-medium flex items-center justify-center md:justify-start gap-2">
-                <Mail className="h-4 w-4" /> {user?.email}
-              </p>
-              <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
-                <span className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-wider text-slate-400">ID: {profile?.student_id || '---'}</span>
-                <span className="px-4 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-300 rounded-full text-[10px] font-bold uppercase tracking-wider">{profile?.department || 'General'}</span>
-              </div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+        * { box-sizing: border-box; }
+        .f-display { font-family: 'Playfair Display', Georgia, serif; }
+        .field-input { outline: none; transition: border-color 0.2s; font-family: 'DM Sans', sans-serif; }
+        .field-input:focus { border-color: #1955e6 !important; }
+        .field-input::placeholder { color: #c0bbb5; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
+
+      <div style={{ maxWidth: 1000, margin: '0 auto', paddingBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+        {/* Profile banner */}
+        <div style={{ background: '#1a1510', padding: '2rem 2.25rem', display: 'flex', alignItems: 'center', gap: '1.75rem', flexWrap: 'wrap', position: 'relative', overflow: 'hidden' }}>
+          {/* Avatar */}
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{
+              width: 72, height: 72,
+              background: 'linear-gradient(135deg, #1955e6, #6b3de8)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'Playfair Display',serif", fontSize: '1.75rem', fontWeight: 700, color: '#fff',
+            }}>{initial}</div>
+            <div style={{ position: 'absolute', bottom: -4, right: -4, width: 18, height: 18, background: '#1a7a4a', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #1a1510' }}>
+              <BadgeCheck size={10} color="#fff" />
             </div>
           </div>
-          {/* Subtle Glows */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-blue-600/10 blur-[100px] rounded-full" />
-          <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-indigo-600/10 blur-[100px] rounded-full" />
+
+          <div>
+            <h2 className="f-display" style={{ fontSize: 'clamp(1.25rem, 2.5vw, 1.75rem)', fontWeight: 700, color: '#F7F3EE', letterSpacing: '-0.02em', lineHeight: 1.15, margin: '0 0 0.375rem' }}>
+              {formData.full_name || 'New Student'}
+            </h2>
+            <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', color: '#5a5550', margin: '0 0 0.625rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <Mail size={12} /> {user?.email}
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 600, color: '#5a5550', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0.2rem 0.625rem', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }}>
+                ID: {profile?.student_id || '—'}
+              </span>
+              <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 600, color: '#7aabff', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0.2rem 0.625rem', border: '1px solid #7aabff30', background: '#7aabff10' }}>
+                {profile?.department || 'General'}
+              </span>
+            </div>
+          </div>
+
+          <GraduationCap size={100} color="rgba(255,255,255,0.03)" style={{ position: 'absolute', right: -16, bottom: -20 }} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Main Form Area */}
-          <div className="lg:col-span-8 space-y-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              
-              {/* Personal Details */}
-              <div className={cardStyle}>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-blue-500 mb-10 flex items-center gap-3">
-                  <span className="h-px w-8 bg-blue-500/30"></span> Personal Profile
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <label className={labelStyle}>Full Name</label>
-                    <input
-                      name="full_name"
-                      value={formData.full_name}
-                      onChange={handleChange}
-                      className={inputStyle}
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div>
-                    <label className={labelStyle}>Date of Birth</label>
-                    <div className="relative">
-                      <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600" />
-                      <input
-                        type="date"
-                        name="date_of_birth"
-                        value={formData.date_of_birth}
-                        onChange={handleChange}
-                        className={inputStyle}
-                      />
-                    </div>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className={labelStyle}>Residential Address</label>
-                    <div className="relative">
-                      <MapPin className="absolute right-4 top-4 h-4 w-4 text-slate-600" />
+        {/* Main layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: '1px', background: '#ddd8d0', alignItems: 'start' }}>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} style={{ background: '#fff', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+
+            {/* Personal */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                <div style={{ height: 1, width: 24, background: '#1955e6' }} />
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 700, color: '#1955e6', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>
+                  Personal Profile
+                </p>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem 1.25rem' }}>
+                {[
+                  { label: 'Full Name',    name: 'full_name',     type: 'text',  placeholder: 'John Doe', colSpan: false },
+                  { label: 'Date of Birth',name: 'date_of_birth', type: 'date',  placeholder: '',         colSpan: false },
+                  { label: 'Address',      name: 'address',       type: 'area',  placeholder: 'Complete Address', colSpan: true  },
+                ].map(field => (
+                  <div key={field.name} style={field.colSpan ? { gridColumn: '1/-1' } : {}}>
+                    <label style={{ display: 'block', fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 700, color: '#6b6460', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                      {field.label}
+                    </label>
+                    {field.type === 'area' ? (
                       <textarea
-                        name="address"
-                        value={formData.address}
+                        name={field.name}
+                        value={formData[field.name]}
                         onChange={handleChange}
                         rows={3}
-                        className={`${inputStyle} resize-none`}
-                        placeholder="Complete Address"
+                        placeholder={field.placeholder}
+                        className="field-input"
+                        style={{ width: '100%', padding: '0.75rem 1rem', background: '#faf8f5', border: '1.5px solid #ddd8d0', color: '#1a1510', fontSize: '0.875rem', resize: 'none' }}
                       />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className={cardStyle}>
-                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-emerald-500 mb-10 flex items-center gap-3">
-                  <span className="h-px w-8 bg-emerald-500/30"></span> Contact & Emergency
-                </h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <label className={labelStyle}>Phone Number</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className={inputStyle}
-                      placeholder="+63 000 000 0000"
-                    />
-                  </div>
-                  <div>
-                    <label className={labelStyle}>Emergency Contact</label>
-                    <input
-                      name="emergency_contact"
-                      value={formData.emergency_contact}
-                      onChange={handleChange}
-                      className={inputStyle}
-                      placeholder="Guardian name"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className={labelStyle}>Emergency Phone</label>
-                    <input
-                      type="tel"
-                      name="emergency_phone"
-                      value={formData.emergency_phone}
-                      onChange={handleChange}
-                      className={inputStyle}
-                      placeholder="Guardian contact number"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center justify-between gap-6 p-4">
-                {message.text && (
-                  <div className={`flex items-center gap-2 text-sm font-bold ${
-                    message.type === 'success' ? 'text-emerald-400' : 'text-rose-400'
-                  }`}>
-                    <ShieldCheck className="h-4 w-4" /> {message.text}
-                  </div>
-                )}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="ml-auto flex items-center gap-3 px-12 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-500 transition-all shadow-[0_0_20px_rgba(37,99,235,0.2)] active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Save Configuration
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Sidebar Area */}
-          <div className="lg:col-span-4 space-y-8">
-            <div className="bg-[#0a0c14] border border-[#1a1d29] rounded-[2rem] p-8 shadow-2xl">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-8">System Records</h3>
-              
-              <div className="space-y-6">
-                {[
-                  { label: 'Year Level', val: `Year ${profile?.year_level || 1}`, icon: GraduationCap, color: 'text-blue-400' },
-                  { label: 'Department', val: profile?.department || 'Not Set', icon: Building2, color: 'text-indigo-400' },
-                  { label: 'Registration', val: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024', icon: Calendar, color: 'text-emerald-400' }
-                ].map((item, idx) => (
-                  <div key={idx} className="group p-4 bg-[#131622] border border-[#1f2335] rounded-2xl flex items-center gap-4 transition-all hover:border-blue-500/30">
-                    <div className={`p-3 bg-[#1a1d29] rounded-xl ${item.color}`}>
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-tighter">{item.label}</p>
-                      <p className="text-sm font-bold text-slate-200">{item.val}</p>
-                    </div>
+                    ) : (
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={formData[field.name]}
+                        onChange={handleChange}
+                        placeholder={field.placeholder}
+                        className="field-input"
+                        style={{ width: '100%', height: 46, padding: '0 1rem', background: '#faf8f5', border: '1.5px solid #ddd8d0', color: '#1a1510', fontSize: '0.875rem' }}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
+            </div>
 
-              <div className="mt-10 p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
-                <div className="flex items-center gap-3 text-emerald-400 mb-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Verified Student</span>
-                </div>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Academic records are synced with the University registrar. Contact support for ID corrections.
+            {/* Contact */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                <div style={{ height: 1, width: 24, background: '#1a7a4a' }} />
+                <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 700, color: '#1a7a4a', letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0 }}>
+                  Contact &amp; Emergency
                 </p>
               </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem 1.25rem' }}>
+                {[
+                  { label: 'Phone Number',       name: 'phone',             type: 'tel',  placeholder: '+63 000 000 0000', colSpan: false },
+                  { label: 'Emergency Contact',  name: 'emergency_contact', type: 'text', placeholder: 'Guardian name',    colSpan: false },
+                  { label: 'Emergency Phone',    name: 'emergency_phone',   type: 'tel',  placeholder: 'Guardian contact', colSpan: true  },
+                ].map(field => (
+                  <div key={field.name} style={field.colSpan ? { gridColumn: '1/-1' } : {}}>
+                    <label style={{ display: 'block', fontFamily: "'DM Sans',sans-serif", fontSize: '0.7rem', fontWeight: 700, color: '#6b6460', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                      {field.label}
+                    </label>
+                    <input
+                      type={field.type}
+                      name={field.name}
+                      value={formData[field.name]}
+                      onChange={handleChange}
+                      placeholder={field.placeholder}
+                      className="field-input"
+                      style={{ width: '100%', height: 46, padding: '0 1rem', background: '#faf8f5', border: '1.5px solid #ddd8d0', color: '#1a1510', fontSize: '0.875rem' }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Save row */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', paddingTop: '0.5rem', borderTop: '1px solid #e8e2db' }}>
+              {message.text && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', color: message.type === 'success' ? '#1a7a4a' : '#c83030' }}>
+                  <ShieldCheck size={14} /> {message.text}
+                </div>
+              )}
+              <button type="submit" disabled={loading} style={{
+                marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                height: 42, padding: '0 1.5rem',
+                background: loading ? '#e8e2db' : '#1a1510',
+                border: 'none', color: loading ? '#a0a09c' : '#F7F3EE',
+                fontFamily: "'DM Sans',sans-serif", fontSize: '0.78rem', fontWeight: 700,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.2s',
+              }}
+                onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#2e2820'; }}
+                onMouseLeave={e => { if (!loading) e.currentTarget.style.background = '#1a1510'; }}>
+                {loading ? <Loader2 size={14} style={{ animation: 'spin 0.75s linear infinite' }} /> : <Save size={14} />}
+                Save Changes
+              </button>
+            </div>
+          </form>
+
+          {/* Sidebar */}
+          <div style={{ background: '#fff', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div>
+              <div style={{ width: 28, height: 2, background: '#8a857f', marginBottom: '0.75rem' }} />
+              <h3 className="f-display" style={{ fontSize: '1rem', fontWeight: 700, color: '#1a1510', margin: 0 }}>
+                System Records
+              </h3>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: '#ddd8d0' }}>
+              {[
+                { label: 'Year Level',   val: `Year ${profile?.year_level || 1}`,                                  icon: GraduationCap, color: '#1955e6' },
+                { label: 'Department',   val: profile?.department || 'Not Set',                                     icon: Building2,     color: '#8b3de8' },
+                { label: 'Registered',   val: profile?.created_at ? new Date(profile.created_at).getFullYear() : '2024', icon: Calendar, color: '#1a7a4a' },
+              ].map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={i} style={{ background: '#faf8f5', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <div style={{ width: 30, height: 30, flexShrink: 0, background: item.color + '12', border: `1px solid ${item.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={14} color={item.color} />
+                    </div>
+                    <div>
+                      <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 600, color: '#a0a09c', textTransform: 'uppercase', letterSpacing: '0.06em', margin: 0 }}>{item.label}</p>
+                      <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.8125rem', fontWeight: 600, color: '#1a1510', margin: '0.1rem 0 0' }}>{item.val}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ background: '#f0faf4', border: '1px solid #a8dfc0', padding: '0.875rem 1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem' }}>
+                <ShieldCheck size={13} color="#1a7a4a" />
+                <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.65rem', fontWeight: 700, color: '#1a7a4a', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Verified Student</span>
+              </div>
+              <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '0.75rem', color: '#4a6c56', lineHeight: 1.55, margin: 0 }}>
+                Records are synced with the University registrar. Contact support for ID corrections.
+              </p>
             </div>
           </div>
+
         </div>
       </div>
     </Layout>
