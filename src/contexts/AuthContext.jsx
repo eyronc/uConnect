@@ -63,8 +63,30 @@ export function AuthProvider({ children }) {
     if (user) await fetchProfile(user.id);
   };
 
+  const signUp = async (email, password) => {
+    const result = await supabase.auth.signUp({ email, password });
+    return result;
+  };
+
   const signIn = async (email, password) => {
-    return await supabase.auth.signInWithPassword({ email, password });
+    try {
+      const result = await supabase.auth.signInWithPassword({ email, password });
+      return result;
+    } catch (error) {
+      console.error('Sign in error:', error);
+      return { error };
+    }
+  };
+
+  const signInDemo = async () => {
+    try {
+      return await supabase.auth.signInWithPassword({
+        email: 'demo@uconnect.edu',
+        password: 'DemoPassword123!'
+      });
+    } catch (error) {
+      return { error };
+    }
   };
 
   const signOut = async () => {
@@ -77,7 +99,9 @@ export function AuthProvider({ children }) {
     session,
     profile, // Now available to all components
     loading,
+    signUp,
     signIn,
+    signInDemo,
     signOut,
     refreshProfile, // Allows Settings to trigger an update
   };

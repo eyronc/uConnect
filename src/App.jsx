@@ -19,6 +19,7 @@ import SkillArena from "./pages/SkillArena";
 import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import ChatBot from "./components/ChatBot"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,10 +53,13 @@ const App = () => (
           <Route path="/app/skill-arena" element={<ProtectedRoute><SkillArena /></ProtectedRoute>} />
           <Route path="/app/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
+          
         </Routes>
+        <ChatBot floating={true} />
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
+  
 );
 
 export default App;
