@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import Support from "./pages/Support";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import ChatBot from "./components/ChatBot"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,10 +55,13 @@ const App = () => (
           <Route path="/app/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/app/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
+          
         </Routes>
+        <ChatBot floating={true} />
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
+  
 );
 
 export default App;
