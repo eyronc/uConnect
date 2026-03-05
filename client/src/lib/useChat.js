@@ -17,10 +17,14 @@ export function useChat() {
     setLoading(true)
 
     try {
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession()
+
       const { data, error } = await supabase.functions.invoke("chat", {
         body: { message: text },
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
         }
       })
 
