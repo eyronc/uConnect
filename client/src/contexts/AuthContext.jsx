@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext({});
 
@@ -14,10 +14,9 @@ export const useAuth = () => {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
-  const [profile, setProfile] = useState(null); // New state for DB profile
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Helper to fetch profile data from the 'profiles' table
   const fetchProfile = async (userId) => {
     try {
       const { data, error } = await supabase
