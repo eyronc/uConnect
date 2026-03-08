@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GraduationCap, Mail, Lock, User, Eye, EyeOff, ArrowRight, Clock } from 'lucide-react';
 
 export default function Register() {
+  const navigate = useNavigate();
   const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +13,12 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setMounted(true));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,46 +34,66 @@ export default function Register() {
     }
   };
 
+  const handleNavTo = (path, e) => {
+    e.preventDefault();
+    setLeaving(true);
+    setTimeout(() => navigate(path), 500);
+  };
+
   const sharedStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
     .f-display { font-family: 'Playfair Display', Georgia, serif; }
     a { text-decoration: none; color: inherit; }
 
-    .reg-left {
-      position: relative; width: 52%; min-height: 100vh;
-      overflow: hidden; display: flex; flex-direction: column;
+    .auth-left {
+      position: relative;
+      width: 50%;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
     }
-    .reg-vid-bg { position: absolute; inset: 0; z-index: 0; }
-    .reg-vid-bg video { width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
-    .reg-overlay {
+    .auth-vid-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+    .auth-vid-bg video {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center 40%;
+    }
+    .auth-overlay {
       position: absolute; inset: 0; z-index: 1;
       background: linear-gradient(160deg, rgba(12,9,5,0.82) 0%, rgba(12,9,5,0.58) 50%, rgba(12,9,5,0.88) 100%);
     }
-    .reg-grain {
+    .auth-grain {
       position: absolute; inset: 0; z-index: 2;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
       opacity: 0.5; pointer-events: none;
     }
-    .reg-vignette {
+    .auth-vignette {
       position: absolute; inset: 0; z-index: 3;
       box-shadow: inset 0 0 140px rgba(0,0,0,0.45); pointer-events: none;
     }
-    .reg-left-content {
+    .auth-left-content {
       position: relative; z-index: 10;
       display: flex; flex-direction: column;
       height: 100%; padding: 2.5rem; justify-content: space-between;
     }
-    .reg-right {
-      width: 48%; display: flex; flex-direction: column;
-      justify-content: center; padding: 3rem 4rem;
-      background: #F7F3EE; overflow-y: auto;
+
+    .auth-right {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 4rem;
+      background: #F7F3EE;
+      overflow-y: auto;
     }
+
     .field-wrap { position: relative; margin-bottom: 1rem; }
     .field-icon {
       position: absolute; left: 1rem; top: 50%;
-      transform: translateY(-50%); color: #a09a93;
-      pointer-events: none; transition: color 0.2s;
+      transform: translateY(-50%); color: #a09a93; pointer-events: none; transition: color 0.2s;
     }
     .field-input {
       width: 100%; height: 52px; padding: 0 1rem 0 2.75rem;
@@ -76,21 +103,23 @@ export default function Register() {
     }
     .field-input::placeholder { color: #b0aba5; }
     .field-input:focus { border-color: #1a1510; box-shadow: 0 0 0 3px rgba(26,21,16,0.06); }
+
     .btn-dark-full {
       width: 100%; height: 52px; background: #1a1510; color: #F7F3EE;
       font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.8rem;
-      letter-spacing: 0.07em; text-transform: uppercase;
-      border: none; cursor: pointer;
+      letter-spacing: 0.07em; text-transform: uppercase; border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 0.5rem;
       transition: background 0.2s;
     }
     .btn-dark-full:hover { background: #2e2820; }
     .btn-dark-full:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .error-box {
       padding: 0.875rem 1rem; background: #fff5f5;
       border: 1px solid #f5c6c6; color: #c0392b;
       font-size: 0.8375rem; margin-bottom: 1.25rem;
     }
+
     .perks-cell {
       padding: 1.125rem 1.25rem; background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.1);
@@ -101,7 +130,8 @@ export default function Register() {
       width: 6px; height: 6px; border-radius: 50%;
       background: #7aabff; flex-shrink: 0; margin-top: 0.4rem;
     }
-    /* Success */
+
+    /* Success page */
     .success-page { background: #F7F3EE; min-height: 100vh; display: flex; flex-direction: column; font-family: 'DM Sans', sans-serif; }
     .success-nav { border-bottom: 1px solid #ddd8d0; padding: 0 1.75rem; height: 60px; display: flex; align-items: center; }
     .success-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 4rem 1.75rem; }
@@ -119,6 +149,7 @@ export default function Register() {
       font-family: 'Playfair Display', serif; font-size: 1.25rem;
       font-weight: 700; color: #c8c2bb; line-height: 1; flex-shrink: 0; width: 28px;
     }
+
     @keyframes fadeUp {
       from { opacity:0; transform:translateY(18px); }
       to   { opacity:1; transform:translateY(0); }
@@ -129,9 +160,10 @@ export default function Register() {
     .a4 { animation: fadeUp 0.6s 0.4s both; }
     .a5 { animation: fadeUp 0.6s 0.5s both; }
     .a6 { animation: fadeUp 0.6s 0.6s both; }
-    @media(max-width: 820px) {
-      .reg-left { display: none; }
-      .reg-right { width: 100%; padding: 2rem 1.5rem; }
+
+    @media(max-width: 900px) {
+      .auth-left { display: none; }
+      .auth-right { width: 100%; padding: 2rem 1.5rem; }
     }
   `;
 
@@ -152,11 +184,9 @@ export default function Register() {
 
           <div className="success-body">
             <div style={{ maxWidth: 480, width: '100%' }}>
-
               <div className="a1">
                 <div className="expiry-badge"><Clock size={12} /> Link expires in 15 minutes</div>
               </div>
-
               <div className="a2" style={{ marginBottom: '2rem' }}>
                 <div style={{ width: 36, height: 2, background: '#1a1510', marginBottom: '1.25rem' }} />
                 <h1 className="f-display" style={{
@@ -170,7 +200,6 @@ export default function Register() {
                   <strong style={{ color: '#1a1510' }}>{email}</strong>
                 </p>
               </div>
-
               <div className="a3" style={{ marginBottom: '2.5rem' }}>
                 {[
                   { n: '01', text: 'Open the email from Supabase Auth in your inbox' },
@@ -183,7 +212,6 @@ export default function Register() {
                   </div>
                 ))}
               </div>
-
               <div className="a4">
                 <Link to="/login" style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
@@ -195,14 +223,12 @@ export default function Register() {
                   Return to sign in <ArrowRight size={14} />
                 </Link>
               </div>
-
               <div className="a4" style={{ paddingTop: '1.5rem', borderTop: '1px solid #ddd8d0' }}>
                 <p style={{ fontSize: '0.78rem', color: '#b0aba5' }}>
                   Didn't receive it? Check your spam folder or{' '}
                   <Link to="/register" style={{ color: '#1a1510', borderBottom: '1px solid #c8c2bb' }}>try again</Link>.
                 </p>
               </div>
-
             </div>
           </div>
         </div>
@@ -212,21 +238,29 @@ export default function Register() {
 
   // ── Register form ──
   return (
-    <div style={{ background: '#F7F3EE', fontFamily: "'DM Sans', sans-serif", minHeight: '100vh', display: 'flex' }}>
+    <div style={{
+      background: '#F7F3EE',
+      fontFamily: "'DM Sans', sans-serif",
+      minHeight: '100vh',
+      display: 'flex',
+      opacity: mounted && !leaving ? 1 : 0,
+      transform: mounted && !leaving ? 'translateX(0)' : leaving ? 'translateX(40px)' : 'translateX(-40px)',
+      transition: 'opacity 0.45s cubic-bezier(0.4,0,0.2,1), transform 0.45s cubic-bezier(0.4,0,0.2,1)',
+    }}>
       <style>{sharedStyles}</style>
 
-      <div className="reg-left">
-        <div className="reg-vid-bg">
+      <div className="auth-left">
+        <div className="auth-vid-bg">
           <video autoPlay muted loop playsInline preload="auto">
-            <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-            <source src="https://videos.pexels.com/video-files/5198239/5198239-hd_1920_1080_25fps.mp4" type="video/mp4" />
+            <source src="https://assets.mixkit.co/videos/21595/21595-720.mp4" type="video/mp4" />
+            <source src="https://assets.mixkit.co/videos/48165/48165-720.mp4" type="video/mp4" />
           </video>
         </div>
-        <div className="reg-overlay" />
-        <div className="reg-grain" />
-        <div className="reg-vignette" />
+        <div className="auth-overlay" />
+        <div className="auth-grain" />
+        <div className="auth-vignette" />
 
-        <div className="reg-left-content">
+        <div className="auth-left-content">
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div style={{ width: 30, height: 30, background: '#F7F3EE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <GraduationCap size={16} color="#1a1510" />
@@ -237,7 +271,7 @@ export default function Register() {
           <div>
             <div style={{ width: 36, height: 2, background: '#7aabff', marginBottom: '1.5rem' }} />
             <h2 className="f-display" style={{
-              fontSize: 'clamp(2rem, 3.5vw, 3rem)', fontWeight: 700, color: '#F7F3EE',
+              fontSize: 'clamp(2rem, 2.8vw, 2.75rem)', fontWeight: 700, color: '#F7F3EE',
               lineHeight: 1.1, letterSpacing: '-0.025em', marginBottom: '1rem',
             }}>
               Join the future<br />
@@ -266,7 +300,7 @@ export default function Register() {
         </div>
       </div>
 
-      <div className="reg-right">
+      <div className="auth-right">
         <div style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
 
           <div className="a1" style={{ marginBottom: '2.5rem' }}>
@@ -279,7 +313,10 @@ export default function Register() {
             </h1>
             <p style={{ fontSize: '0.875rem', color: '#7a756f' }}>
               Already have an account?{' '}
-              <Link to="/login" style={{ color: '#1a1510', fontWeight: 600, borderBottom: '1px solid #1a1510' }}>Sign in</Link>
+              <a href="/login" onClick={(e) => handleNavTo('/login', e)}
+                style={{ color: '#1a1510', fontWeight: 600, borderBottom: '1px solid #1a1510' }}>
+                Sign in
+              </a>
             </p>
           </div>
 
