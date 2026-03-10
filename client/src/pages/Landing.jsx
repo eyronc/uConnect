@@ -22,7 +22,6 @@ export default function Landing() {
         .f-display { font-family: 'Playfair Display', Georgia, serif; }
         a { text-decoration: none; color: inherit; }
 
-        /* ─── Video hero wrapper ─── */
         .vid-hero {
           position: relative;
           min-height: 100vh;
@@ -31,17 +30,13 @@ export default function Landing() {
           overflow: hidden;
         }
 
-        /* Full-bleed video */
-        .vid-bg {
-          position: absolute; inset: 0; z-index: 0;
-        }
+        .vid-bg { position: absolute; inset: 0; z-index: 0; }
         .vid-bg video {
           width: 100%; height: 100%;
           object-fit: cover;
           object-position: center 35%;
         }
 
-        /* Warm-dark layered overlay */
         .vid-overlay {
           position: absolute; inset: 0; z-index: 1;
           background: linear-gradient(
@@ -52,7 +47,6 @@ export default function Landing() {
           );
         }
 
-        /* SVG grain on top */
         .vid-grain {
           position: absolute; inset: 0; z-index: 2;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
@@ -60,14 +54,12 @@ export default function Landing() {
           pointer-events: none;
         }
 
-        /* Edge vignette */
         .vid-vignette {
           position: absolute; inset: 0; z-index: 3;
           box-shadow: inset 0 0 140px rgba(0,0,0,0.45);
           pointer-events: none;
         }
 
-        /* Nav inside hero */
         .hero-nav {
           position: relative; z-index: 10;
           border-bottom: 1px solid rgba(255,255,255,0.09);
@@ -76,19 +68,11 @@ export default function Landing() {
           -webkit-backdrop-filter: blur(14px);
         }
 
-        /* Below-hero page nav */
-        .page-nav {
-          background: #F7F3EE;
-          border-bottom: 1px solid #ddd8d0;
-          position: sticky; top: 0; z-index: 50;
-        }
-
         .nav-light { font-family:'DM Sans',sans-serif; font-size:.8375rem; font-weight:500; color:rgba(247,243,238,.7); letter-spacing:.01em; transition:color .2s; }
         .nav-light:hover { color:#fff; }
         .nav-dark  { font-family:'DM Sans',sans-serif; font-size:.8375rem; font-weight:500; color:#4a4540; letter-spacing:.01em; transition:color .2s; }
         .nav-dark:hover  { color:#1955e6; }
 
-        /* Buttons */
         .btn-cream {
           display:inline-flex; align-items:center; gap:.5rem;
           background:#F7F3EE; color:#1a1510;
@@ -118,36 +102,6 @@ export default function Landing() {
         }
         .btn-dark:hover { background:#2e2820; }
 
-        .btn-outline {
-          display:inline-flex; align-items:center; gap:.5rem;
-          background:transparent; color:#1a1510;
-          font-family:'DM Sans',sans-serif; font-weight:600;
-          font-size:.8rem; letter-spacing:.06em; text-transform:uppercase;
-          padding:.75rem 1.625rem;
-          border:1.5px solid #c8c2bb; cursor:pointer;
-          transition:border-color .2s;
-        }
-        .btn-outline:hover { border-color:#1a1510; }
-
-        /* Tag */
-        .hero-tag {
-          display:inline-flex; align-items:center; gap:.35rem;
-          background:rgba(235,240,255,.12); color:rgba(200,215,255,.92);
-          font-family:'DM Sans',sans-serif; font-size:.7rem;
-          font-weight:600; letter-spacing:.09em; text-transform:uppercase;
-          padding:.3rem .75rem; border:1px solid rgba(200,215,255,.22);
-          backdrop-filter:blur(4px);
-        }
-
-        .page-tag {
-          display:inline-flex; align-items:center; gap:.35rem;
-          background:#EBF0FF; color:#1955e6;
-          font-family:'DM Sans',sans-serif; font-size:.7rem;
-          font-weight:600; letter-spacing:.09em; text-transform:uppercase;
-          padding:.3rem .75rem; border:1px solid #c5d3ff;
-        }
-
-        /* Frosted stat cards */
         .glass-stats {
           display:flex; flex-direction:column; gap:1px;
           background:rgba(255,255,255,.07);
@@ -165,7 +119,6 @@ export default function Landing() {
         .glass-stat:last-child { border-bottom:none; }
         .glass-stat:hover { background:rgba(255,255,255,.09); }
 
-        /* Scroll hint */
         .scroll-hint {
           position:absolute; bottom:2rem; left:50%;
           transform:translateX(-50%); z-index:5;
@@ -182,7 +135,6 @@ export default function Landing() {
           50%      { transform:translateX(-50%) translateY(7px); }
         }
 
-        /* Feature / step cells */
         .feature-cell {
           background:#fff; padding:2.25rem 2rem;
           border:1px solid #e8e2db; transition:box-shadow .25s;
@@ -198,7 +150,6 @@ export default function Landing() {
           color:#322d27; line-height:1; display:block; margin-bottom:1.25rem;
         }
 
-        /* Animations */
         @keyframes fadeUp {
           from { opacity:0; transform:translateY(22px); }
           to   { opacity:1; transform:translateY(0); }
@@ -209,37 +160,25 @@ export default function Landing() {
         .a3 { animation:fadeUp .7s .55s both; }
         .a4 { animation:fadeUp .7s .65s both; }
 
-        /* Responsive */
         @media(max-width:820px) {
           .hero-inner    { grid-template-columns:1fr !important; }
           .features-grid { grid-template-columns:1fr 1fr !important; }
           .steps-grid    { grid-template-columns:1fr !important; }
-          .glass-stats   { display:none; } /* hide on mobile to keep hero clean */
+          .glass-stats   { display:none; }
         }
         @media(max-width:520px) {
           .features-grid { grid-template-columns:1fr !important; }
         }
       `}</style>
 
-
-      {/* ╔══════════════════════════════════════╗
-          ║  VIDEO HERO                          ║
-          ╚══════════════════════════════════════╝ */}
       <div className="vid-hero">
 
-        {/* Video layer */}
         <div className="vid-bg">
           <video autoPlay muted loop playsInline preload="auto">
-            {/* Students with laptops — education & collaboration */}
-            <source
-              src="https://videos.pexels.com/video-files/5198239/5198239-hd_1920_1080_25fps.mp4"
-              type="video/mp4"
-            />
-            {/* Fallback: university campus study */}
-            <source
-              src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4"
-              type="video/mp4"
-            />
+            {/* Close-up: student hands typing on laptop — portal/tech academic feel */}
+            <source src="https://assets.mixkit.co/videos/4763/4763-720.mp4" type="video/mp4" />
+            {/* Fallback: young woman with headphones working in library with laptop */}
+            <source src="https://assets.mixkit.co/videos/4531/4531-720.mp4" type="video/mp4" />
           </video>
         </div>
 
@@ -247,7 +186,6 @@ export default function Landing() {
         <div className="vid-grain" />
         <div className="vid-vignette" />
 
-        {/* Nav */}
         <nav className="hero-nav">
           <div style={{ maxWidth:1120, margin:'0 auto', padding:'0 1.75rem', display:'flex', alignItems:'center', justifyContent:'space-between', height:60 }}>
             <div style={{ display:'flex', alignItems:'center', gap:'.5rem' }}>
@@ -263,12 +201,10 @@ export default function Landing() {
           </div>
         </nav>
 
-        {/* Hero body */}
         <div style={{ flex:1, display:'flex', alignItems:'center', position:'relative', zIndex:5 }}>
           <div style={{ maxWidth:1120, margin:'0 auto', padding:'0 1.75rem', width:'100%' }}>
             <div className="hero-inner" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4rem', alignItems:'center', padding:'4rem 0 7rem' }}>
 
-              {/* Left */}
               <div>
                 <h1 className="f-display a1" style={{
                   fontSize:'clamp(2.6rem, 4.5vw, 4.25rem)',
@@ -293,7 +229,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* Right — frosted glass stats */}
               <div className="glass-stats a4">
                 {[
                   { val:'10K+', label:'Students active',    sub:'Across 40+ universities' },
@@ -327,20 +262,15 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Scroll hint */}
         <div className="scroll-hint">
           <span>Scroll</span>
           <div className="scroll-line" />
         </div>
 
       </div>
-      {/* ╚══════════════════════════════════════╝ */}
 
-
-      {/* ── Separator ── */}
       <div style={{ borderTop:'1px solid #ddd8d0', maxWidth:1120, margin:'0 auto' }} />
 
-      {/* ── Features ── */}
       <section style={{ maxWidth:1120, margin:'0 auto', padding:'5.5rem 1.75rem' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:'2.5rem', flexWrap:'wrap', gap:'1.5rem' }}>
           <div>
@@ -370,7 +300,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── How It Works ── */}
       <section id="how-it-works" style={{ background:'#1a1510', padding:'5.5rem 1.75rem' }}>
         <div style={{ maxWidth:1120, margin:'0 auto' }}>
           <div style={{ marginBottom:'3.5rem' }}>
@@ -397,7 +326,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
       <section style={{ padding:'7rem 1.75rem', background:'#F7F3EE', textAlign:'center' }}>
         <div style={{ maxWidth:560, margin:'0 auto' }}>
           <h2 className="f-display" style={{
@@ -418,7 +346,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
       <div style={{ borderTop:'1px solid #ddd8d0', padding:'1.25rem 1.75rem', textAlign:'center' }}>
         <p style={{ fontSize:'.78rem', color:'#b0aba5' }}>© 2025 uConnect. All rights reserved.</p>
       </div>
