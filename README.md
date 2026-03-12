@@ -1,4 +1,4 @@
-🎓 uConnect
+# 🎓 uConnect
 
 uConnect is a next-generation academic platform designed to unify the entire student experience in one intelligent ecosystem. Instead of juggling multiple systems for enrollment, payments, study materials, and academic support, uConnect centralizes everything into a single, seamless digital environment.
 
